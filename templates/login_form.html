@@ -1,26 +1,14 @@
-<!doctype html>
+{% extends 'base.html' %}
+{% block content %}
 
-<html>
-<head>
-	<title>Login</title>
-</head>
-<body>
-    <a href="/">Home</a>
-    <br>
+<title>Login</title>
 
-	<form action='/login' method='POST'>
-		<label>Email:
-            <input type="email" name="user_email">
-        </label>
+<form action='/login' method='POST'>
+    <input type='email' name='user_email' placeholder='Email'></input>
+    <br><br>
+    <input type='password' name='user_password' placeholder='Password'></input
+    <br><br>
+    <input type='submit' value='Log In'></input>
+</form>
 
-        <br><br>
-        <label>Password:
-            <input type="password" name="user_password">
-        </label>
-
-        <br><br>
-        <input type="submit" value="Log In">
-	</form>
-
-</body>
-</html>
+{% endblock %}

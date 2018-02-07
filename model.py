@@ -17,6 +17,12 @@ class User(db.Model):
 	password = db.Column(db.String(64), nullable=False, unique=True)
 	phone = db.Column(db.Integer, nullable=True)
 
+	friends = db.relationship('User', secondary='friendships',
+							  primaryjoin='User.user_id==Friendship.friend_1_id',
+							  secondaryjoin='User.user_id==Friendship.friend_2_id')
+
+	#must add friendship twice, one way, then the other
+
 
 	def __repr__(self):
 		"""Provide helpful representation when printed"""
@@ -36,7 +42,10 @@ class Event(db.Model):
 	creator_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 	public = db.Column(db.Boolean, nullable=True)
 
-	user = db.relationship('User', backref=db.backref('events', order_by=event_id))
+	creator = db.relationship('User', backref=db.backref('created_events'))
+
+	invitees = db.relationship('User', secondary='invitations', backref='invited_events')
+	#go first to inivation class to get user_id, then go to users
 
 	
 	def __repr__(self):
@@ -55,15 +64,28 @@ class Invitation(db.Model):
 
 	__tablename__ = "invitations"
 
-	invitee_id = db.Column(db.Integer, primary_key=True)
-	creator = db.Column(db.Integer, db.ForeignKey('users.user_id')) #invitor_id? event_creator
+	invitation_id = db.Column(db.Integer, primary_key=True)
+	invitee_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 	event_id = db.Column(db.Integer, db.ForeignKey('events.event_id'))
 	attending = db.Column(db.Boolean, nullable=True)
 	notes = db.Column(db.String(128), nullable=True)
 
-	user = db.relationship('User', backref=db.backref('invitations', order_by=invitee_id))
+	event = db.relationship('Event', backref='invitations')
 
-	event = db.relationship('Event', backref=db.backref('invitations', order_by=invitee_id))
+	invitee = db.relationship('User', backref='invitations')
+
+
+	# for rating in user.ratings:
+	# 	rating.movie.title
+	# 	rating.score
+
+	# for invitation in event.invitations:
+	# 	invitation.invitee.name
+	# 	invitation.attending
+	# 	invitation.notes
+
+
+##get back into queue: display everybody invited, and their reply
 
 
 	def __repr__(self):
@@ -85,7 +107,8 @@ class Picture(db.Model):
 	uploader_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 	event_id = db.Column(db.Integer, db.ForeignKey('events.event_id'))
 
-	user = db.relationship('User')
+	uploader = db.relationship('User')
+	event = db.relationship("Event", backref="pictures")
 
 	# event = db.relationship('Event')
 
@@ -105,13 +128,10 @@ class Friendship(db.Model):
 	__tablename__ = 'friendships'
 
 	friendship_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-	friend_1 = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-	friend_2 = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+	friend_1_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+	friend_2_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 
-	user = db.relationship('User')
-
-
-
+	# user = db.relationship('User')
 
 
 
