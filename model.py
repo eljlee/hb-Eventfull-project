@@ -60,7 +60,6 @@ class Event(db.Model):
 class Invitation(db.Model):
 	"""Invitation."""
 
-	#"wedding invitation"
 
 	__tablename__ = "invitations"
 

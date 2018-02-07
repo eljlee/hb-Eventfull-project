@@ -4,7 +4,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
 
-# from model import 
+# import pdb; pdb.set_trace()
 
 
 app = Flask(__name__)
@@ -55,7 +55,44 @@ def user_profile(user_id):
 
 	user = User.query.filter(User.user_id == user_id).first()
 
-	return render_template('user_profile.html', user=user)
+	invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
+
+	# events = Event.query.filter(Event.)
+
+	return render_template('user_profile.html', user=user, invitations=invitations)
+
+
+@app.route('/create-event')
+def creating_event_form():
+	"""Displays form to create an event."""
+
+	return render_template('create_event_form.html')
+
+
+@app.route('/create-event', methods=['POST'])
+def create_event():
+	"""Register new event."""
+
+	title = request.form.get('title')
+	start_time = request.form.get('start_time')
+	end_time = request.form.get('end_time')
+
+
+	privacy = request.form.get('publicprivate')
+	if privacy == 'public':
+		public = True
+	else:
+		public = False
+
+
+
+	new_event = Event(title=title, start_at=start_time, end_at=end_time, creator_id=session['user_id'], public=public)
+	db.session.add(new_event)
+	db.session.commit()
+
+	flash('Event created!')
+
+	return render_template("event_page.html")
 
 
 @app.route('/registration-form')
@@ -72,6 +109,8 @@ def validate_user():
 	name = request.form.get('new_user_name')
 	email = request.form.get('new_user_email')
 	password = request.form.get('new_user_password')
+
+	##### it's not taking number ######
 	phone = request.form.get('new_user_phone')
 
 	validation_entry = User.query.filter(User.email == email).first()
