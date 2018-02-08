@@ -15,9 +15,9 @@ app.secret_key = 'EVENTFULL'
 
 @app.route('/')
 def homepage():
-    """Show homepage."""
+	"""Show homepage."""
 
-    return render_template('homepage.html')
+	return render_template('homepage.html')
 
 
 @app.route('/login')
@@ -74,16 +74,15 @@ def create_event():
 	"""Register new event."""
 
 	title = request.form.get('title')
-	start_time = request.form.get('start_time')
-	end_time = request.form.get('end_time')
+	start_time = request.form.get('start_date')
+	end_time = request.form.get('end_date')
 
 
-	privacy = request.form.get('publicprivate')
-	if privacy == 'public':
+	public = request.form.get('public')
+	if public == 'public':
 		public = True
 	else:
 		public = False
-
 
 
 	new_event = Event(title=title, start_at=start_time, end_at=end_time, creator_id=session['user_id'], public=public)
@@ -92,7 +91,27 @@ def create_event():
 
 	flash('Event created!')
 
-	return render_template("event_page.html")
+	return redirect('/event-page/{id}', id=new_event.event_id)
+
+
+# @app.route('/event-page')
+# def get_event_info(event_id):
+# 	"""Grabbing event info to display."""
+
+# 	event_info = Event.query.filter(Event.event_id == event.id).one()
+
+# 	return redirect('/event-page')
+
+
+
+@app.route('/event-page/<event_id>')
+def event_info(event_id):
+	"""Display event info."""
+
+	event_info = Event.query.filter(Event.event_id == event_id).one()
+
+	return render_template('event_page.html', event_info=event_info)
+
 
 
 @app.route('/registration-form')

@@ -3,8 +3,8 @@
 
 <body>
 	<h2>Eventfull</h2>
-	<a href='/'>Home</a> | <a href='/login'>Login</a> | <a href='/registration-form'>New User</a> | <a href='/logout'>Logout</a>
-	<br>
+	<a href='/'>Home</a> | <a href='/login'>Login</a> | <a href='/registration-form'>Register New User</a>
+	<br> 
 	<ul>
     	{% for message in get_flashed_messages() %}
         	<li>{{ message }}</li>
@@ -16,3 +16,29 @@
 {% block content %} CONTENTS {% endblock %}
 </body>
 </html>
+
+
+
+<!-- <button id='signIn' class='signInText'>Log In</button>
+<script>
+  "use strict";
+  // code here for above-problem
+
+  //getting element through signIn ID.
+  let buttonToggle = document.querySelector("#signIn");
+
+  //the idea is to toggle the button to say Log Out
+  //when it says Log In, and vice versa.
+  function changeButton(evt) {
+    if (buttonToggle.innerHTML === 'Log In') {
+        buttonToggle.innerHTML = 'Log Out';
+    }
+    else {
+        buttonToggle.innerHTML = 'Log In';
+    }
+  }
+
+  //event listener, once button is clicked, should run changeButton function.
+  buttonToggle.addEventListener('click', changeButton);
+
+</script> -->
