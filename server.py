@@ -27,7 +27,6 @@ def login_form():
 	return render_template('login_form.html')
 
 
-
 @app.route('/login', methods=['POST'])
 def login():
 	"""Show login form."""
@@ -57,9 +56,11 @@ def user_profile(user_id):
 
 	invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
 
-	# events = Event.query.filter(Event.)
+	events = Event.query.filter(Event.creator_id == user_id).all()
 
-	return render_template('user_profile.html', user=user, invitations=invitations)
+	
+
+	return render_template('user_profile.html', user=user, events=events, invitations=invitations)
 
 
 @app.route('/create-event')
@@ -91,17 +92,7 @@ def create_event():
 
 	flash('Event created!')
 
-	return redirect('/event-page/{id}', id=new_event.event_id)
-
-
-# @app.route('/event-page')
-# def get_event_info(event_id):
-# 	"""Grabbing event info to display."""
-
-# 	event_info = Event.query.filter(Event.event_id == event.id).one()
-
-# 	return redirect('/event-page')
-
+	return redirect('/event-page/{id}'.format(id=new_event.event_id))
 
 
 @app.route('/event-page/<event_id>')
@@ -111,7 +102,6 @@ def event_info(event_id):
 	event_info = Event.query.filter(Event.event_id == event_id).one()
 
 	return render_template('event_page.html', event_info=event_info)
-
 
 
 @app.route('/registration-form')
@@ -128,8 +118,6 @@ def validate_user():
 	name = request.form.get('new_user_name')
 	email = request.form.get('new_user_email')
 	password = request.form.get('new_user_password')
-
-	##### it's not taking number ######
 	phone = request.form.get('new_user_phone')
 
 	validation_entry = User.query.filter(User.email == email).first()
@@ -139,7 +127,7 @@ def validate_user():
 		db.session.add(new_user)
 		db.session.commit()
 
-		flash('Successfully registered!')
+		flash('Successfully registered, {name}!'.format(name=name))
 		return redirect('/')
 
 	else:
