@@ -3,8 +3,15 @@
 
 <body>
 	<h2>Eventfull</h2>
-	<a href='/'>Home</a> | <a href='/user/{{ session['user_id'] }}'>Profile</a> | <a href='/login'>Login</a> | <a href='/registration-form'>Register New User</a>
+	<a href='/'>Home</a> | <a href='/user'>Profile</a> |
+	{% if session.get('user_id') %}
+		<a href='/logout'>Logout</a>
+	{% else %}
+		<a href='/login'>Login</a> |
+		<a href='/registration-form'>Register New User</a>
+	{% endif %}
 	<br> 
+
 	<ul>
     	{% for message in get_flashed_messages() %}
         	<li>{{ message }}</li>
