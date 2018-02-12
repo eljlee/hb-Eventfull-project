@@ -12,6 +12,8 @@
 	{% endif %}
 	<br> 
 
+<button id='signIn' class='signInText'>Log In</button>
+
 	<ul>
     	{% for message in get_flashed_messages() %}
         	<li>{{ message }}</li>
@@ -20,13 +22,6 @@
 	<hr>
 
 
-{% block content %} CONTENTS {% endblock %}
-</body>
-</html>
-
-
-
-<!-- <button id='signIn' class='signInText'>Log In</button>
 <script>
   "use strict";
   // code here for above-problem
@@ -48,4 +43,9 @@
   //event listener, once button is clicked, should run changeButton function.
   buttonToggle.addEventListener('click', changeButton);
 
-</script> -->
+</script>
+
+
+{% block content %} CONTENTS {% endblock %}
+</body>
+</html>
