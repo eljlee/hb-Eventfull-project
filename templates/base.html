@@ -1,18 +1,25 @@
 <!doctype html>
 <html>
-
 <body>
 	<h2>Eventfull</h2>
 	<a href='/'>Home</a> | <a href='/user'>Profile</a> |
+
 	{% if session.get('user_id') %}
 		<a href='/logout'>Logout</a>
 	{% else %}
 		<a href='/login'>Login</a> |
 		<a href='/registration-form'>Register New User</a>
 	{% endif %}
-	<br> 
 
-<button id='signIn' class='signInText'>Log In</button>
+	<br> 
+<!--   <button onclick="window.location='/';">Home</button>
+
+  {% if session.get('user_id') %}
+  <button id='signIn' onclick="window.location='/login';">Sign In</button>
+  {% else %}
+  <button id='signIn' onclick="window.location='/logout';">Logout</button>
+  <button onclick="window.location='/registration-form';">New User</button>
+  {% endif %} -->
 
 	<ul>
     	{% for message in get_flashed_messages() %}
@@ -22,30 +29,9 @@
 	<hr>
 
 
-<script>
-  "use strict";
-  // code here for above-problem
-
-  //getting element through signIn ID.
-  let buttonToggle = document.querySelector("#signIn");
-
-  //the idea is to toggle the button to say Log Out
-  //when it says Log In, and vice versa.
-  function changeButton(evt) {
-    if (buttonToggle.innerHTML === 'Log In') {
-        buttonToggle.innerHTML = 'Log Out';
-    }
-    else {
-        buttonToggle.innerHTML = 'Log In';
-    }
-  }
-
-  //event listener, once button is clicked, should run changeButton function.
-  buttonToggle.addEventListener('click', changeButton);
-
-</script>
-
-
-{% block content %} CONTENTS {% endblock %}
+{% block content %} 
+  {% block Javascript %} JAVASCRIPT {% endblock %}
+CONTENTS 
+{% endblock %}
 </body>
 </html>

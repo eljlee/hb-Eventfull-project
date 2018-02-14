@@ -78,6 +78,32 @@ def user_profile(user_id):
 
     return render_template('user_profile.html', user=user, events=events, invitations=invitations)
 
+@app.route('/user/<user_id>', methods=['POST'])
+def profile_pic(user_id):
+    """User can upload profile image."""
+
+    image = request.form.get('pic')
+
+    user = User.query.filter(User.user_id == user_id).first()
+    invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
+    events = Event.query.filter(Event.creator_id == user_id).all()
+
+    user.image = image
+
+    db.session.commit()
+
+    return render_template('user_profile.html', user=user, events=events, invitations=invitations)
+
+
+# @app.route('/edit-profile')
+# def edit_profile():
+#     """User can make changes in their profile."""
+
+
+
+
+#     return render_template('user_profile.html', )
+
 
 # CREATE EVENT
 ##############################################################
@@ -112,14 +138,15 @@ def create_event():
     db.session.commit()
 
 
-    friend_invited = request.form.get('friend')
-    invitation = Invitation(
-                            invitee_id=friend_invited,
-                            event_id=new_event.event_id,
-                            )
+    invitees = request.form.getlist('friend')
+    for invitee in invitees:
+        invitation = Invitation(
+                                invitee_id=invitee,
+                                event_id=new_event.event_id,
+                                )
 
-    db.session.add(invitation)
-    db.session.commit()
+        db.session.add(invitation)
+        db.session.commit()
 
     flash('Event created!')
 

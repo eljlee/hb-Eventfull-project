@@ -16,7 +16,7 @@ class User(db.Model):
     email = db.Column(db.String(64), nullable=False, unique=True)
     password = db.Column(db.String(64), nullable=False, unique=True)
     phone = db.Column(db.Integer, nullable=True)
-    image = db.Column(db.String(64), nullable=True)
+    image = db.Column(db.String(256), nullable=True)
 
     friends = db.relationship('User', secondary='friendships',
                               primaryjoin='User.user_id==Friendship.friend_1_id',
