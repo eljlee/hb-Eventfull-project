@@ -82,17 +82,16 @@ def user_profile(user_id):
 def profile_pic(user_id):
     """User can upload profile image."""
 
-    image = request.form.get('pic')
+    user.image = request.form.get('pic')
 
     user = User.query.filter(User.user_id == user_id).first()
     invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     events = Event.query.filter(Event.creator_id == user_id).all()
 
-    user.image = image
-
     db.session.commit()
 
     return render_template('user_profile.html', user=user, events=events, invitations=invitations)
+
 
 
 # @app.route('/edit-profile')
@@ -100,9 +99,8 @@ def profile_pic(user_id):
 #     """User can make changes in their profile."""
 
 
-
-
 #     return render_template('user_profile.html', )
+
 
 
 # CREATE EVENT
@@ -159,19 +157,33 @@ def create_event():
 def event_info(event_id):
     """Display event info."""
 
+    personal_invitation = Invitation.query.filter(Invitation.invitee_id == session['user_id'], 
+                                                  Invitation.event_id == event_id).first()
     event_info = Event.query.filter(Event.event_id == event_id).one()
 
-    return render_template('event_page.html', event_info=event_info)
+    invitations = Invitation.query.filter(Invitation.event_id == event_id).all()
+
+    if event_info.creator_id != session['user_id'] and personal_invitation.attending == None:
+        return render_template('invitation.html', event_info=event_info)
+
+    else:
+        return render_template('event_page.html', invitations=invitations, event_info=event_info)
 
 
-# @app.route('/invite')
-# def invitations(event_id):
-#     """Inviting other users."""
+@app.route('/invite-reply', methods=['POST'])
+def invitations():
+    """Replying to invititation."""
 
-#     # for loop to get all the friends checked off...
+    invitation = Invitation.query.filter(Invitation.event_id == session['user_id']).first()
 
-#     user_id = request.args.get('friend')
-#     invitation = Invitation(invitee_id=user_id, event_id=)
+    reply_str = request.form.get('reply')
+    invitation.attending = reply_str == 'yes'
+
+    invitation.notes = request.form.get('note')
+
+    db.session.commit()
+
+    return redirect('/event-page/{event_id}'.format(event_id=invitation.event_id))
 
 
 
