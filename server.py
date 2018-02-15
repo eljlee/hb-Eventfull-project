@@ -1,5 +1,5 @@
 ##### server file ######
-from flask import Flask, render_template, redirect, request, flash, session, g
+from flask import Flask, render_template, redirect, request, flash, session, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
@@ -78,6 +78,7 @@ def user_profile(user_id):
 
     return render_template('user_profile.html', user=user, events=events, invitations=invitations)
 
+
 @app.route('/user/<user_id>', methods=['POST'])
 def profile_pic(user_id):
     """User can upload profile image."""
@@ -92,6 +93,25 @@ def profile_pic(user_id):
 
     return render_template('user_profile.html', user=user, events=events, invitations=invitations)
 
+
+@app.route('/calendar-events')
+def get_events_from_db():
+    """Return all events for specific user as JSON."""
+    # import pdb; pdb.set_trace()
+
+    invited_events = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
+
+    events = []
+
+    for invited_event in invited_events:
+        event_info = {}
+        event_info['start_date'] = str(invited_event.event.start_at)
+        event_info['end_date'] = str(invited_event.event.end_at)
+        event_info['text'] = str(invited_event.event.title)
+
+        events.append(event_info)
+
+    return jsonify(events)
 
 
 # @app.route('/edit-profile')
@@ -174,7 +194,9 @@ def event_info(event_id):
 def invitations():
     """Replying to invititation."""
 
-    invitation = Invitation.query.filter(Invitation.event_id == session['user_id']).first()
+    # NEED TO FIX, NEED CORRECT EVENT_ID
+
+    invitation = Invitation.query.filter(Invitation.event_id == event_id).first()
 
     reply_str = request.form.get('reply')
     invitation.attending = reply_str == 'yes'
