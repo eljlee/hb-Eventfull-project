@@ -97,21 +97,26 @@ def profile_pic(user_id):
 @app.route('/calendar-events')
 def get_events_from_db():
     """Return all events for specific user as JSON."""
+
     # import pdb; pdb.set_trace()
 
+    # this should get all invitations user has been invited to
     invited_events = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
 
     events = []
 
     for invited_event in invited_events:
         event_info = {}
-        event_info['start_date'] = str(invited_event.event.start_at)
-        event_info['end_date'] = str(invited_event.event.end_at)
-        event_info['text'] = str(invited_event.event.title)
+        event_info = {
+            'start_date': str(invited_event.event.start_at), 
+            'end_date': str(invited_event.event.end_at), 
+            'text': str(invited_event.event.title)
+            }
 
         events.append(event_info)
-
-    return jsonify(events)
+    print events
+    results = {'result': events}
+    return jsonify(results)
 
 
 # @app.route('/edit-profile')
@@ -226,6 +231,7 @@ def validate_user():
     email = request.form.get('new_user_email')
     password = request.form.get('new_user_password')
     phone = request.form.get('new_user_phone')
+    image = 'http://cumbrianrun.co.uk/wp-content/uploads/2014/02/default-placeholder.png'
 
     validation_entry = User.query.filter(User.email == email).first()
 
@@ -234,7 +240,8 @@ def validate_user():
             name=name,
             email=email,
             password=password,
-            phone=phone
+            phone=phone,
+            image=image
             )
         db.session.add(new_user)
         db.session.commit()
