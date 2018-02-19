@@ -83,11 +83,11 @@ def user_profile(user_id):
 def profile_pic(user_id):
     """User can upload profile image."""
 
-    user.image = request.form.get('pic')
-
     user = User.query.filter(User.user_id == user_id).first()
     invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     events = Event.query.filter(Event.creator_id == user_id).all()
+
+    user.image = request.form.get('pic')
 
     db.session.commit()
 
@@ -98,24 +98,37 @@ def profile_pic(user_id):
 def get_events_from_db():
     """Return all events for specific user as JSON."""
 
-    # import pdb; pdb.set_trace()
-
     # this should get all invitations user has been invited to
-    invited_events = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
+    invitations = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
+    # # should get all the events user has created
+    # hostings = Event.query.filter(Event.creator_id == session['user_id']).all()
 
-    events = []
-
-    for invited_event in invited_events:
+    events_invited = []
+    for invitation in invitations:
         event_info = {}
         event_info = {
-            'start_date': str(invited_event.event.start_at), 
-            'end_date': str(invited_event.event.end_at), 
-            'text': str(invited_event.event.title)
+            'start_date': str(invitation.event.start_at), 
+            'end_date': str(invitation.event.end_at), 
+            'text': str(invitation.event.title)
             }
 
-        events.append(event_info)
-    print events
-    results = {'result': events}
+        events_invited.append(event_info)
+
+
+    # events_created = []
+    # for hosting in hostings:
+    #     event_info = {}
+    #     event_info = {
+    #         'start_date': str(hosting.start_at), 
+    #         'end_date': str(hosting.end_at), 
+    #         'text': str(hosting.title)
+    #         }
+
+    #     events_created.append(event_info)
+
+
+    # made into a single key-value dict of a list of dicts
+    results = {'invites': events_invited}
     return jsonify(results)
 
 
