@@ -1,6 +1,7 @@
 ##### server file ######
 from flask import Flask, render_template, redirect, request, flash, session, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
+from datetime import datetime
 
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
 
@@ -94,7 +95,35 @@ def profile_pic(user_id):
     return render_template('user_profile.html', user=user, events=events, invitations=invitations)
 
 
-@app.route('/calendar-events')
+@app.route('/calendar-events', methods=['POST'])
+def get_events_from_cal():
+    """Recieve events made on calendar, and input into db."""
+
+    title = request.form.get('title')
+    start = request.form.get('start_date')
+
+    day, month, date, year, time, blank1, zone = start.split()
+
+
+    # Fri Feb 23 2018 00:00:00 GMT-0800 (PST)
+    # start_time = datetime.strptime(start, "%Y-%m-%d-%H:-%M")
+    start_time = datetime.strftime(start, "%Y-%m-%d-%H:-%M")
+
+    end_time = request.form.get('end_date')
+
+    new_event = Event(
+        title=title,
+        start_at=start_time, 
+        end_at=end_time,
+        creator_id=session['user_id']
+        )
+    # db.session.add(new_event)
+    # db.session.commit()
+
+    return "Okay"
+
+
+@app.route('/db-events.json')
 def get_events_from_db():
     """Return all events for specific user as JSON."""
 
@@ -113,18 +142,6 @@ def get_events_from_db():
             }
 
         events_invited.append(event_info)
-
-
-    # events_created = []
-    # for hosting in hostings:
-    #     event_info = {}
-    #     event_info = {
-    #         'start_date': str(hosting.start_at), 
-    #         'end_date': str(hosting.end_at), 
-    #         'text': str(hosting.title)
-    #         }
-
-    #     events_created.append(event_info)
 
 
     # made into a single key-value dict of a list of dicts
