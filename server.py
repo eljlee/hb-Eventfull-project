@@ -1,7 +1,7 @@
 ##### server file ######
 from flask import Flask, render_template, redirect, request, flash, session, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
-from datetime import datetime
+import datetime
 
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
 
@@ -100,16 +100,16 @@ def get_events_from_cal():
     """Recieve events made on calendar, and input into db."""
 
     title = request.form.get('title')
-    start = request.form.get('start_date')
-
+    start = str(request.form.get('start_date'))
     day, month, date, year, time, blank1, zone = start.split()
+    start_time = datetime.datetime.strptime(year + month + date, '%Y%b%d').strftime('%Y-%m-%d')
+    print start_time
 
+    end = str(request.form.get('end_date'))
+    day, month, date, year, time, blank1, zone = end.split()
+    end_time = datetime.datetime.strptime(year + month + date, '%Y%b%d').strftime('%Y-%m-%d')
+    print end_time
 
-    # Fri Feb 23 2018 00:00:00 GMT-0800 (PST)
-    # start_time = datetime.strptime(start, "%Y-%m-%d-%H:-%M")
-    start_time = datetime.strftime(start, "%Y-%m-%d-%H:-%M")
-
-    end_time = request.form.get('end_date')
 
     new_event = Event(
         title=title,
@@ -117,8 +117,8 @@ def get_events_from_cal():
         end_at=end_time,
         creator_id=session['user_id']
         )
-    # db.session.add(new_event)
-    # db.session.commit()
+    db.session.add(new_event)
+    db.session.commit()
 
     return "Okay"
 
