@@ -20,10 +20,6 @@ def homepage():
 
     return render_template('homepage.html')
 
-# @app.before_request
-# def before_request():
-#   g.session = session
-
 
 # LOGGING IN
 ##############################################################
@@ -40,7 +36,6 @@ def login():
 
     email = request.form.get('user_email')
     password = request.form.get('user_password')
-
 
     user = User.query.filter(User.email == email).first()  # returns a user obj
 
@@ -95,6 +90,22 @@ def profile_pic(user_id):
     return render_template('user_profile.html', user=user, events=events, invitations=invitations)
 
 
+# USER PROFILE - EDIT
+##############################################################
+@app.route('/edit-profile/<user_id>')
+def edit_profile(user_id):
+    """Profile edit template."""
+
+    user = User.query.filter(User.user_id == user_id).first()
+
+
+    return render_template('edit_profile.html', user=user)
+
+
+
+
+# ACTIVITIES ON CALENDAR
+##############################################################
 @app.route('/calendar-events', methods=['POST'])
 def get_events_from_cal():
     """Recieve events made on calendar, and input into db."""
@@ -102,14 +113,13 @@ def get_events_from_cal():
     title = request.form.get('title')
     start = str(request.form.get('start_date'))
     day, month, date, year, time, blank1, zone = start.split()
-    start_time = datetime.datetime.strptime(year + month + date, '%Y%b%d').strftime('%Y-%m-%d')
+    start_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
     print start_time
 
     end = str(request.form.get('end_date'))
     day, month, date, year, time, blank1, zone = end.split()
-    end_time = datetime.datetime.strptime(year + month + date, '%Y%b%d').strftime('%Y-%m-%d')
+    end_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
     print end_time
-
 
     new_event = Event(
         title=title,
@@ -129,8 +139,8 @@ def get_events_from_db():
 
     # this should get all invitations user has been invited to
     invitations = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
-    # # should get all the events user has created
-    # hostings = Event.query.filter(Event.creator_id == session['user_id']).all()
+    # should get all the events user has created
+    hostings = Event.query.filter(Event.creator_id == session['user_id']).all()
 
     events_invited = []
     for invitation in invitations:
@@ -143,19 +153,21 @@ def get_events_from_db():
 
         events_invited.append(event_info)
 
+    events_hosting = []
+    for hosting in hostings:
+        event_info = {}
+        event_info = {
+            'start_date': str(hosting.start_at), 
+            'end_date': str(hosting.end_at), 
+            'text': str(hosting.title)
+            }
+
+        events_hosting.append(event_info)
+
 
     # made into a single key-value dict of a list of dicts
-    results = {'invites': events_invited}
+    results = {'invites': events_invited, 'hostings': events_hosting}
     return jsonify(results)
-
-
-# @app.route('/edit-profile')
-# def edit_profile():
-#     """User can make changes in their profile."""
-
-
-#     return render_template('user_profile.html', )
-
 
 
 # CREATE EVENT
@@ -243,7 +255,6 @@ def invitations():
     return redirect('/event-page/{event_id}'.format(event_id=invitation.event_id))
 
 
-
 # NEW USERS
 ##############################################################
 @app.route('/registration-form')
@@ -292,17 +303,6 @@ def logout():
     session.clear()
     flash('You have logged out.')
     return redirect('/')
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
