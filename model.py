@@ -75,14 +75,6 @@ class Invitation(db.Model):
 
     invitee = db.relationship('User', backref='invitations')
 
-    # for invitation in event.invitations:
-    #   invitation.invitee.name
-    #   invitation.attending
-    #   invitation.notes
-
-
-##get back into queue: display everybody invited, and their reply
-
 
     def __repr__(self):
         """Provide helpful representation when printed."""
@@ -105,7 +97,7 @@ class Picture(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey('events.event_id'))
 
     uploader = db.relationship('User')
-    event = db.relationship("Event", backref="pictures")
+    event = db.relationship('Event', backref='pictures')
 
     # event = db.relationship('Event')
 
@@ -116,7 +108,8 @@ class Picture(db.Model):
         return "< Picture pic_id={} filename={} uploader_id={} event_id={} >".format(self.pic_id, 
                                                                                      self.filename, 
                                                                                      self.uploader_id, 
-                                                                                     self.event_id)
+                                                                                     self.event_id
+                                                                                     )
 
 
 class Friendship(db.Model):
@@ -128,7 +121,7 @@ class Friendship(db.Model):
     friend_1_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     friend_2_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
 
-    # user = db.relationship('User')
+    # friend = db.relationship('User', backref='friendships')
 
 
 

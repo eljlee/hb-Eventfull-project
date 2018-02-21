@@ -71,8 +71,9 @@ def user_profile(user_id):
     user = User.query.filter(User.user_id == user_id).first()
     invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     events = Event.query.filter(Event.creator_id == user_id).all()
+    friends = Friendship.query.filter(Friendship.friend_1_id == user_id).all()
 
-    return render_template('user_profile.html', user=user, events=events, invitations=invitations)
+    return render_template('user_profile.html', user=user, events=events, invitations=invitations, friends=friends)
 
 
 @app.route('/user/<user_id>', methods=['POST'])
@@ -87,19 +88,43 @@ def profile_pic(user_id):
 
     db.session.commit()
 
-    return render_template('user_profile.html', user=user, events=events, invitations=invitations)
+    return redirect('/user/{user_id}'.format(user_id=user_id))
+
+
+@app.route('/friending/<user_id>', methods=['POST'])
+def befriending(user_id):
+    """Friending between session user and another user."""
+
+    new_friendship = Friendship(
+        friend_1_id = session['user_id'],
+        friend_2_id = user_id
+        )
+    
+    other_way = Friendship(
+        friend_1_id = user_id,
+        friend_2_id = session['user_id']
+        )
+
+    db.session.add(new_friendship)
+    db.session.add(other_way)
+    db.session.commit()
+
+    flash('Made a friend!')
+
+    return redirect('/user/{user_id}'.format(user_id=user_id))
+
 
 
 # USER PROFILE - EDIT
 ##############################################################
-@app.route('/edit-profile/<user_id>')
-def edit_profile(user_id):
-    """Profile edit template."""
+# @app.route('/edit-profile/<user_id>')
+# def edit_profile(user_id):
+#     """Profile edit template."""
 
-    user = User.query.filter(User.user_id == user_id).first()
+#     user = User.query.filter(User.user_id == user_id).first()
 
 
-    return render_template('edit_profile.html', user=user)
+#     return render_template('edit_profile.html', user=user)
 
 
 
@@ -218,6 +243,9 @@ def create_event():
     return redirect('/event-page/{id}'.format(id=new_event.event_id))
 
 
+# @app.route('/invites/<event_id>')
+
+
 # EVENT INFORMATION
 ##############################################################
 @app.route('/event-page/<event_id>')
@@ -230,18 +258,16 @@ def event_info(event_id):
 
     invitations = Invitation.query.filter(Invitation.event_id == event_id).all()
 
-    if event_info.creator_id != session['user_id'] and personal_invitation.attending == None:
+    if event_info.creator_id != session['user_id'] and personal_invitation.attending != True and personal_invitation.attending != False:
         return render_template('invitation.html', event_info=event_info)
 
     else:
         return render_template('event_page.html', invitations=invitations, event_info=event_info)
 
 
-@app.route('/invite-reply', methods=['POST'])
-def invitations():
+@app.route('/invite-reply/<event_id>', methods=['POST'])
+def invitations(event_id):
     """Replying to invititation."""
-
-    # NEED TO FIX, NEED CORRECT EVENT_ID
 
     invitation = Invitation.query.filter(Invitation.event_id == event_id).first()
 
