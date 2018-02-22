@@ -1,4 +1,5 @@
 ##### server file ######
+import os
 from flask import Flask, render_template, redirect, request, flash, session, jsonify, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug import secure_filename
@@ -7,7 +8,7 @@ from model import User, Event, Invitation, Picture, Friendship, connect_to_db, d
 
 # import pdb; pdb.set_trace()
 
-UPLOAD_FOLDER = '/static/uploads'
+UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg'])
 
 
@@ -132,10 +133,12 @@ def edit_profile(user_id):
         user.phone = request.form.get('phone')
 
     # upload image
-    if request.form.get('image'):
-        filename = secure_filename(file.filename)
+    image = request.files['image']
+
+    if image:
+        filename = secure_filename(image.filename)
         user.image = filename
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
     db.session.commit()
 
