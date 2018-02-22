@@ -132,10 +132,10 @@ def edit_profile(user_id):
     if request.form.get('phone'):
         user.phone = request.form.get('phone')
 
-    # upload image
+    # get file class of image
     image = request.files['image']
-
     if image:
+        # get actual file name
         filename = secure_filename(image.filename)
         user.image = filename
         image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -143,8 +143,6 @@ def edit_profile(user_id):
     db.session.commit()
 
     return redirect('/user/{user_id}'.format(user_id=session['user_id']))
-
-
 
 
 # ACTIVITIES ON CALENDAR
