@@ -1,14 +1,18 @@
 ##### server file ######
-from flask import Flask, render_template, redirect, request, flash, session, jsonify
+from flask import Flask, render_template, redirect, request, flash, session, jsonify, url_for
 from flask_debugtoolbar import DebugToolbarExtension
+from werkzeug import secure_filename
 import datetime
-
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
 
 # import pdb; pdb.set_trace()
 
+UPLOAD_FOLDER = '/static/uploads'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg'])
+
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'EVENTFULL'
 
 
@@ -68,6 +72,8 @@ def valid_user():
 def user_profile(user_id):
     """User's account page."""
 
+    # gathering user info, events invited to and created, and their friends
+    # to be displayed onto their profile page
     user = User.query.filter(User.user_id == user_id).first()
     invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     events = Event.query.filter(Event.creator_id == user_id).all()
@@ -76,30 +82,17 @@ def user_profile(user_id):
     return render_template('user_profile.html', user=user, events=events, invitations=invitations, friends=friends)
 
 
-@app.route('/user/<user_id>', methods=['POST'])
-def profile_pic(user_id):
-    """User can upload profile image."""
-
-    user = User.query.filter(User.user_id == user_id).first()
-    invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
-    events = Event.query.filter(Event.creator_id == user_id).all()
-
-    user.image = request.form.get('pic')
-
-    db.session.commit()
-
-    return redirect('/user/{user_id}'.format(user_id=user_id))
-
-
 @app.route('/friending/<user_id>', methods=['POST'])
 def befriending(user_id):
     """Friending between session user and another user."""
 
+    # creating friendship one way
     new_friendship = Friendship(
         friend_1_id = session['user_id'],
         friend_2_id = user_id
         )
     
+    # and then the other way
     other_way = Friendship(
         friend_1_id = user_id,
         friend_2_id = session['user_id']
@@ -114,17 +107,39 @@ def befriending(user_id):
     return redirect('/user/{user_id}'.format(user_id=user_id))
 
 
-
 # USER PROFILE - EDIT
-##############################################################
-# @app.route('/edit-profile/<user_id>')
-# def edit_profile(user_id):
-#     """Profile edit template."""
+#############################################################
+@app.route('/edit-profile/<user_id>')
+def edit_profile_template(user_id):
+    """Profile edit template."""
 
-#     user = User.query.filter(User.user_id == user_id).first()
+    user = User.query.filter(User.user_id == session['user_id']).first()
+
+    return render_template('edit_profile.html', user=user)
 
 
-#     return render_template('edit_profile.html', user=user)
+@app.route('/edit-profile/<user_id>', methods=['POST'])
+def edit_profile(user_id):
+    """Editing profile."""
+
+    user = User.query.filter(User.user_id == session['user_id']).first()
+
+    if request.form.get('name'):
+        user.name = request.form.get('name')
+    if request.form.get('email'):
+        user.email = request.form.get('email')
+    if request.form.get('phone'):
+        user.phone = request.form.get('phone')
+
+    # upload image
+    if request.form.get('image'):
+        filename = secure_filename(file.filename)
+        user.image = filename
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+    db.session.commit()
+
+    return redirect('/user/{user_id}'.format(user_id=session['user_id']))
 
 
 
@@ -133,7 +148,7 @@ def befriending(user_id):
 ##############################################################
 @app.route('/calendar-events', methods=['POST'])
 def get_events_from_cal():
-    """Recieve events made on calendar, and input into db."""
+    """Recieve events made on calendar, and udpate db."""
 
     title = request.form.get('title')
     start = str(request.form.get('start_date'))
@@ -160,7 +175,7 @@ def get_events_from_cal():
 
 @app.route('/db-events.json')
 def get_events_from_db():
-    """Return all events for specific user as JSON."""
+    """Return all events from db for specific user as JSON."""
 
     # this should get all invitations user has been invited to
     invitations = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
@@ -201,9 +216,9 @@ def get_events_from_db():
 def creating_event_form():
     """Displays form to create an event."""
 
-    users = User.query.all()
+    user = User.query.filter(User.user_id == session['user_id']).first()
 
-    return render_template('create_event_form.html', users=users)
+    return render_template('create_event_form.html', user=user)
 
 
 @app.route('/create-event', methods=['POST'])
@@ -242,8 +257,6 @@ def create_event():
 
     return redirect('/event-page/{id}'.format(id=new_event.event_id))
 
-
-# @app.route('/invites/<event_id>')
 
 
 # EVENT INFORMATION
