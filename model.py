@@ -99,8 +99,6 @@ class Picture(db.Model):
     uploader = db.relationship('User')
     event = db.relationship('Event', backref='pictures')
 
-    # event = db.relationship('Event')
-
 
     def __repr__(self):
         """Provide helpful representation when printed."""

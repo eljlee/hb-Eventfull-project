@@ -17,7 +17,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'EVENTFULL'
 
 
-
+# NEED TO BE LOGGED IN BEFORE BEING ABLE TO DO ANYTHING
 
 @app.route('/')
 def homepage():
@@ -47,7 +47,7 @@ def login():
     if user is not None and user.password == password:
         session['user_id'] = user.user_id
 
-        flash('Successfully logged in.')
+        flash('Successfully logged in, {name}'.format(name=user.name))
         return redirect('/user/{id}'.format(id=user.user_id))
 
     else:
@@ -80,7 +80,13 @@ def user_profile(user_id):
     events = Event.query.filter(Event.creator_id == user_id).all()
     friends = Friendship.query.filter(Friendship.friend_1_id == user_id).all()
 
-    return render_template('user_profile.html', user=user, events=events, invitations=invitations, friends=friends)
+    # used to check if user has access to another user's event and calendar
+    friend_list = []
+    for friend in friends:
+        friend_list.append(friend.friend_2_id)
+
+
+    return render_template('user_profile.html', user=user, events=events, invitations=invitations, friend_list=friend_list)
 
 
 @app.route('/friending/<user_id>', methods=['POST'])
@@ -106,6 +112,17 @@ def befriending(user_id):
     flash('Made a friend!')
 
     return redirect('/user/{user_id}'.format(user_id=user_id))
+
+
+@app.route('/search-friend', methods=['POST'])
+def fine_specific_user():
+    """Find specific user's by email."""
+
+    email = request.form.get('email')  
+
+    user = User.query.filter(User.email == email).first()
+
+    return redirect('/user/{user_id}'.format(user_id=user.user_id))
 
 
 # USER PROFILE - EDIT
@@ -171,17 +188,17 @@ def get_events_from_cal():
     db.session.add(new_event)
     db.session.commit()
 
-    return "Okay"
+    return "Calendar event."
 
 
-@app.route('/db-events.json')
-def get_events_from_db():
+@app.route('/db-events.json/<user_id>')
+def get_events_from_db(user_id):
     """Return all events from db for specific user as JSON."""
 
     # this should get all invitations user has been invited to
-    invitations = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
+    invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     # should get all the events user has created
-    hostings = Event.query.filter(Event.creator_id == session['user_id']).all()
+    hostings = Event.query.filter(Event.creator_id == user_id).all()
 
     events_invited = []
     for invitation in invitations:
@@ -259,7 +276,6 @@ def create_event():
     return redirect('/event-page/{id}'.format(id=new_event.event_id))
 
 
-
 # EVENT INFORMATION
 ##############################################################
 @app.route('/event-page/<event_id>')
@@ -272,11 +288,15 @@ def event_info(event_id):
 
     invitations = Invitation.query.filter(Invitation.event_id == event_id).all()
 
-    if event_info.creator_id != session['user_id'] and personal_invitation.attending != True and personal_invitation.attending != False:
-        return render_template('invitation.html', event_info=event_info)
+    pictures = Picture.query.filter(Picture.event_id == event_id).all()
 
-    else:
-        return render_template('event_page.html', invitations=invitations, event_info=event_info)
+
+    # if event_info.creator_id != session['user_id'] and personal_invitation.attending != True and personal_invitation.attending != False:
+    #     return render_template('invitation.html', event_info=event_info)
+
+    # else:
+    return render_template('event_page.html', invitations=invitations, event_info=event_info, 
+                           pictures=pictures, personal_invitation=personal_invitation)
 
 
 @app.route('/invite-reply/<event_id>', methods=['POST'])
@@ -293,6 +313,46 @@ def invitations(event_id):
     db.session.commit()
 
     return redirect('/event-page/{event_id}'.format(event_id=invitation.event_id))
+
+
+@app.route('/upload-photos/<event_id>', methods=['POST'])
+def upload_photos(event_id):
+    """Upload photos to particular event."""
+
+    # gets a file class object
+    image = request.files['image']
+    # get actual file name
+    filename = secure_filename(image.filename)
+    # save file into my folder
+    image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+    new_photo = Picture(
+        filename=filename,
+        uploader_id=session['user_id'],
+        event_id=event_id
+        )
+
+    db.session.add(new_photo)
+    db.session.commit()
+
+    return redirect('/event-page/{event_id}'.format(event_id=event_id))
+
+
+@app.route('/invite-more/<event_id>', methods=['POST'])
+def invite_more_guests(event_id):
+    """Invite more friends on the event page."""
+
+    invitees = request.form.getlist('friend')
+    for invitee in invitees:
+        invitation = Invitation(
+                                invitee_id=invitee,
+                                event_id=event_id,
+                                )
+
+        db.session.add(invitation)
+        db.session.commit()
+
+    return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
 
 # NEW USERS
@@ -312,21 +372,32 @@ def validate_user():
     email = request.form.get('new_user_email')
     password = request.form.get('new_user_password')
     phone = request.form.get('new_user_phone')
-    image = 'http://cumbrianrun.co.uk/wp-content/uploads/2014/02/default-placeholder.png'
+    image = 'default-placeholder.png'
 
     validation_entry = User.query.filter(User.email == email).first()
 
     if validation_entry is None:
-        new_user = User(
-            name=name,
-            email=email,
-            password=password,
-            phone=phone,
-            image=image
-            )
+        # without phone number; would error out if trying to instantiate new User with an empty phone attribute
+        if phone == '' :
+            new_user = User(
+                name=name,
+                email=email,
+                password=password,
+                image=image
+                )
+            
+        # with phone number
+        else:
+            new_user = User(
+                name=name,
+                email=email,
+                password=password,
+                phone=phone,
+                image=image
+                )
+        
         db.session.add(new_user)
         db.session.commit()
-
         flash('Successfully registered, {name}!'.format(name=name))
         return redirect('/')
 
