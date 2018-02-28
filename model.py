@@ -62,7 +62,6 @@ class Event(db.Model):
 class Invitation(db.Model):
     """Invitation."""
 
-
     __tablename__ = "invitations"
 
     invitation_id = db.Column(db.Integer, primary_key=True)
@@ -79,8 +78,8 @@ class Invitation(db.Model):
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "< Invitation invitee_id={} creator={} event_id={} attending={} >".format(self.invitee_id, 
-                                                                                         self.creator, 
+        return "< Invitation invitation_id={} invitee_id={} event_id={} attending={} >".format(self.invitation_id,
+                                                                                         self.invitee_id, 
                                                                                          self.event_id, 
                                                                                          self.attending
                                                                                          )

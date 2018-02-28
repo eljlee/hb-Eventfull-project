@@ -1,6 +1,8 @@
 ##### server file ######
 import os
 from flask import Flask, render_template, redirect, request, flash, session, jsonify, url_for
+from twilio.rest import Client
+# from twilio.twiml.messaging_response import MessagingResponse
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug import secure_filename
 import datetime
@@ -8,6 +10,12 @@ from model import User, Event, Invitation, Picture, Friendship, connect_to_db, d
 
 # import pdb; pdb.set_trace()
 
+# Twilio
+account_sid = "ACb630b7f56b10119e369292a6afaa4449"
+auth_token = "a541fec3e2e5b3e03c67d5a84c649dab"
+client = Client(account_sid, auth_token)
+
+# Uploading image file into project folder
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg'])
 
@@ -17,7 +25,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'EVENTFULL'
 
 
-# NEED TO BE LOGGED IN BEFORE BEING ABLE TO DO ANYTHING
+# NEED TO BE LOGGED IN BEFORE BEING ABLE TO DO ANYTHING?
 
 @app.route('/')
 def homepage():
@@ -79,6 +87,8 @@ def user_profile(user_id):
     invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     events = Event.query.filter(Event.creator_id == user_id).all()
     friends = Friendship.query.filter(Friendship.friend_1_id == user_id).all()
+    current_user_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
+                                                      Friendship.friend_2_id == user_id).first()
 
     # used to check if user has access to another user's event and calendar
     friend_list = []
@@ -86,30 +96,50 @@ def user_profile(user_id):
         friend_list.append(friend.friend_2_id)
 
 
-    return render_template('user_profile.html', user=user, events=events, invitations=invitations, friend_list=friend_list)
+    return render_template('user_profile.html', user=user, events=events, invitations=invitations, 
+                           friend_list=friend_list, current_user_friendship=current_user_friendship)
 
 
 @app.route('/friending/<user_id>', methods=['POST'])
 def befriending(user_id):
     """Friending between session user and another user."""
 
-    # creating friendship one way
-    new_friendship = Friendship(
-        friend_1_id = session['user_id'],
-        friend_2_id = user_id
-        )
-    
-    # and then the other way
-    other_way = Friendship(
-        friend_1_id = user_id,
-        friend_2_id = session['user_id']
-        )
 
-    db.session.add(new_friendship)
-    db.session.add(other_way)
-    db.session.commit()
+    existing_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
+                                                  Friendship.friend_2_id == user_id).first()
 
-    flash('Made a friend!')
+    if not existing_friendship:
+        # creating friendship one way
+        new_friendship = Friendship(
+            friend_1_id = session['user_id'],
+            friend_2_id = user_id
+            )
+        
+        # and then the other way
+        other_way = Friendship(
+            friend_1_id = user_id,
+            friend_2_id = session['user_id']
+            )
+
+        db.session.add(new_friendship)
+        db.session.add(other_way)
+        db.session.commit()
+
+        flash('Made a friend!')
+
+    return redirect('/user/{user_id}'.format(user_id=user_id))
+
+
+@app.route('/unfriending/<user_id>', methods=['POST'])
+def unfriending(user_id):
+    """Unfriend another user."""
+
+    existing_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
+                                                  Friendship.friend_2_id == user_id).first()
+
+    if existing_friendship:
+        db.session.delete(existing_friendship)
+        db.session.commit()
 
     return redirect('/user/{user_id}'.format(user_id=user_id))
 
@@ -276,6 +306,19 @@ def create_event():
     return redirect('/event-page/{id}'.format(id=new_event.event_id))
 
 
+# Keep?
+# @app.route("/sms", methods=['GET', 'POST'])
+# def sms_ahoy_reply():
+#     """Respond to incoming messages with a friendly SMS."""
+#     # Start our response
+#     resp = MessagingResponse()
+
+#     # Add a message
+#     resp.message("Ahoy! Thanks so much for your message.")
+
+#     return str(resp)
+
+
 # EVENT INFORMATION
 ##############################################################
 @app.route('/event-page/<event_id>')
@@ -342,8 +385,19 @@ def upload_photos(event_id):
 def invite_more_guests(event_id):
     """Invite more friends on the event page."""
 
+
     invitees = request.form.getlist('friend')
+
+    already_invited = Invitation.query.filter(Invitation.event_id == event_id,
+                                         Invitation.invitee_id.in_(invitees)).all()
+
+    already_invited_ids = [str(invitation.invitee_id) for invitation in already_invited]
+
     for invitee in invitees:
+        if invitee in already_invited_ids:
+            print "Already added this user {id}".format(id=invitee)
+            continue
+
         invitation = Invitation(
                                 invitee_id=invitee,
                                 event_id=event_id,
@@ -352,7 +406,25 @@ def invite_more_guests(event_id):
         db.session.add(invitation)
         db.session.commit()
 
+
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
+
+# # HOW DO I TEST FOR THIS?
+# @app.route('/invite-notification/<event_id>')
+# def invite_text(event_id):
+#     """Sends a notificaiton via text."""
+
+#      # by inivitations joined at that one event?
+#     invitations = Invitation.query.filter(Invitation.event_id == event_id).all()
+
+#     for user in invitations:
+#         client.api.account.messages.create(
+#             to="+1415" + str({{ user.invitee.phone }}),
+#             from_="+14158516073 ",
+#             body="You have an invite from {{ invitations.event.creator.name }}!\nCheck it out at http://localhost:5000/event/{{ event.event_id }}"
+#             )
+
+#     return invitations.event.creator.name
 
 
 # NEW USERS
