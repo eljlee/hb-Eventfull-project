@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar sticky-top navbar-expand-md navbar-dark bg-dark">
   <a class="navbar-brand" href="/">Eventfull</a>
 
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,8 @@
 
       {% if session.get('user_id') %}
       <li class="nav-item dropdown active">
+        <!-- Won't dropdown while on an event page. -->
+
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropDownMenuLink" data-toggle="dropdown" 
         aria-haspopup="true" aria-expanded="false">Profile <span class="sr-only">(current)</span></a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">

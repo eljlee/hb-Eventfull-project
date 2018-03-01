@@ -10,7 +10,7 @@ from werkzeug import secure_filename
 import datetime
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
 
-# import pdb; pdb.set_trace()
+# import ipdb; ipdb.set_trace()
 
 # Twilio
 account_sid = "ACb630b7f56b10119e369292a6afaa4449"
@@ -101,7 +101,7 @@ def user_profile(user_id):
                            friend_list=friend_list, current_user_friendship=current_user_friendship)
 
 
-# FRIENDING // UNFRIENDING
+# FRIENDING // UNFRIENDING // SEARCHING
 ##############################################################
 @app.route('/friending/<user_id>', methods=['POST'])
 def befriending(user_id):
@@ -153,11 +153,15 @@ def unfriending(user_id):
 def fine_specific_user():
     """Find specific user's by email."""
 
-    email = request.form.get('email')  
+    if session:
+        email = request.form.get('email')  
 
-    user = User.query.filter(User.email == email).first()
+        user = User.query.filter(User.email == email).first()
 
-    return redirect('/user/{user_id}'.format(user_id=user.user_id))
+        return redirect('/user/{user_id}'.format(user_id=user.user_id))
+    else:
+        flash('Log in first!')
+        return redirect('/')
 
 
 # USER PROFILE - EDIT
@@ -307,7 +311,7 @@ def create_event():
         db.session.commit()
 
         user = User.query.filter(User.user_id == invitee).first()
-        event = Event.query.filter(Event.event_id == event_id).first()
+        event = Event.query.filter(Event.event_id == new_event.event_id).first()
 
         # send personalized text notification
         client = Client(account_sid, auth_token)
@@ -317,7 +321,7 @@ def create_event():
             body="Hey {name}, you have an invite from {creator}!\nCheck it out at http://localhost:5000/event/{event_id}".format(
                                                                                                                                  name=user.name,
                                                                                                                                  creator=event.creator.name, 
-                                                                                                                                 event_id=event_id
+                                                                                                                                 event_id=event.event_id
                                                                                                                                  )
         )
 
@@ -353,13 +357,20 @@ def event_info(event_id):
 
     pictures = Picture.query.filter(Picture.event_id == event_id).all()
 
+    # Creat list of friends who are not invited to an event
+    already_invited_ids = [invitation.invitee_id for invitation in invitations]
+    uninvited_friends = []
+    # list of friend objs
+    friends_of_creator = event_info.creator.friends
 
-    # if event_info.creator_id != session['user_id'] and personal_invitation.attending != True and personal_invitation.attending != False:
-    #     return render_template('invitation.html', event_info=event_info)
+    for friend_of_creator in friends_of_creator:
+        if friend_of_creator.user_id in already_invited_ids:
+            continue
+        uninvited_friends.append(friend_of_creator)
 
-    # else:
+
     return render_template('event_page.html', invitations=invitations, event_info=event_info, 
-                           pictures=pictures, personal_invitation=personal_invitation)
+                           pictures=pictures, personal_invitation=personal_invitation, uninvited_friends=uninvited_friends)
 
 
 @app.route('/invite-reply/<event_id>', methods=['POST'])
@@ -378,7 +389,7 @@ def invitations(event_id):
     return redirect('/event-page/{event_id}'.format(event_id=invitation.event_id))
 
 
-@app.route('/upload-photos/<event_id>', methods=['POST'])
+@app.route('/upload-event-photos/<event_id>', methods=['POST'])
 def upload_photos(event_id):
     """Upload photos to particular event."""
 
