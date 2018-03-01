@@ -1,34 +1,60 @@
 <!doctype html>
 <html>
 <head>
-
+  <script src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-
-
 </head>
 
 <body>
-
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand" href="/">Eventfull</a>
-  <div class="navbar-nav">
-    <a class="nav-item nav-link active" href="/user">Profile</a>
-    {% if session.get('user_id') %}
-    <a class="nav-item nav-link" href="/logout">Logout</a>
-    {% else %}
-    <a class="nav-item nav-link" href="login">Login</a>
-    <a class="nav-item nav-link" href="registration-form">Register New user</a>
-    {% endif %}
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+
+      {% if session.get('user_id') %}
+      <li class="nav-item dropdown active">
+        <a class="nav-link dropdown-toggle" href="/user" id="navbarDropDownMenuLink" data-toggle="dropdown" 
+        aria-haspopup="true" aria-expanded="false">Profile <span class="sr-only">(current)</span></a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="#">Action</a>
+          <a class="dropdown-item" href="#">Another action</a>
+          <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a>
+      </li>
+
+      {% else %}
+      <li class="nav-item">
+        <a class="nav-link" id="login" link="login">Login</a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="registration-form">Register New user</a>
+      </li>
+      {% endif %}
+    </ul>
   </div>
 
-  <!-- Search box -->
-  <form action='/search-friend' method='POST' class="form-inline my-2 my-lg-0">
-    <input class="form-control mr-sm-2" type="search" name="email" placeholder="Enter email" aria-label="Search"></input>
-    <input class="btn btn-outline-info my-2 my-sm-0" type="submit" value="Search friend"></input>
-  </form>
-</nav>
 
+  <!-- Search box -->
+  <div>
+    <form action='/search-friend' method='POST' class="form-inline my-2 my-lg-0">
+      <input class="form-control mr-sm-2" type="search" name="email" placeholder="Enter email" aria-label="Search"></input>
+      <input class="btn btn-outline-info my-2 my-sm-0" type="submit" value="Search friend"></input>
+    </form>
+  </div>
+</nav>
 
 
 <ul>
@@ -38,6 +64,42 @@
 </ul>
 <hr>
 
+
+<!-- Modal for logging users in. -->
+{% if not session.get('user_id') %}
+  <div id="loginModal" class="modal fade" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+      <div class="modal-dialog modal-md">
+        <!-- Modal content-->
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h4 class="modal-title">Logging in</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+
+          <form action='/login' method='POST'>
+            <div class="modal-body">
+              <p><input type='email' name='user_email' placeholder='Email'></input></p>
+              <p><input type='password' name='user_password' placeholder='Password'></input></p>
+              <p><input type='submit' value='Log In'></input></p>
+            </div>
+
+            <div class="modal-footer">
+              <input type='submit' value='Submit'></input>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $('#login').click(function() {
+        $('#loginModal').modal('show');
+      });
+      
+    </script>
+{% endif %}
 
 
 {% block content %} 

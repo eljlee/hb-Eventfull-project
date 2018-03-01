@@ -1,6 +1,8 @@
 ##### server file ######
 import os
 from flask import Flask, render_template, redirect, request, flash, session, jsonify, url_for
+# from flask_login import login_required
+# @login_required
 from twilio.rest import Client
 # from twilio.twiml.messaging_response import MessagingResponse
 from flask_debugtoolbar import DebugToolbarExtension
@@ -13,7 +15,6 @@ from model import User, Event, Invitation, Picture, Friendship, connect_to_db, d
 # Twilio
 account_sid = "ACb630b7f56b10119e369292a6afaa4449"
 auth_token = "a541fec3e2e5b3e03c67d5a84c649dab"
-client = Client(account_sid, auth_token)
 
 # Uploading image file into project folder
 UPLOAD_FOLDER = 'static/uploads'
@@ -36,11 +37,11 @@ def homepage():
 
 # LOGGING IN
 ##############################################################
-@app.route('/login')
-def login_form():
-    """Show login form."""
+# @app.route('/login')
+# def login_form():
+#     """Show login form."""
 
-    return render_template('login_form.html')
+#     return render_template('login_form.html')
 
 
 @app.route('/login', methods=['POST'])
@@ -100,6 +101,8 @@ def user_profile(user_id):
                            friend_list=friend_list, current_user_friendship=current_user_friendship)
 
 
+# FRIENDING // UNFRIENDING
+##############################################################
 @app.route('/friending/<user_id>', methods=['POST'])
 def befriending(user_id):
     """Friending between session user and another user."""
@@ -114,18 +117,20 @@ def befriending(user_id):
             friend_1_id = session['user_id'],
             friend_2_id = user_id
             )
-        
+        db.session.add(new_friendship)
+
+    else:
         # and then the other way
         other_way = Friendship(
             friend_1_id = user_id,
             friend_2_id = session['user_id']
             )
-
-        db.session.add(new_friendship)
         db.session.add(other_way)
-        db.session.commit()
 
-        flash('Made a friend!')
+    
+    db.session.commit()
+
+    flash('Made a friend!')
 
     return redirect('/user/{user_id}'.format(user_id=user_id))
 
@@ -381,11 +386,11 @@ def upload_photos(event_id):
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
 
-@app.route('/invite-more/<event_id>', methods=['POST'])
+@app.route('/invite-more/<event_id>', methods=['POST'])    
 def invite_more_guests(event_id):
     """Invite more friends on the event page."""
 
-
+    # list of IDs
     invitees = request.form.getlist('friend')
 
     already_invited = Invitation.query.filter(Invitation.event_id == event_id,
@@ -395,7 +400,6 @@ def invite_more_guests(event_id):
 
     for invitee in invitees:
         if invitee in already_invited_ids:
-            print "Already added this user {id}".format(id=invitee)
             continue
 
         invitation = Invitation(
@@ -406,25 +410,47 @@ def invite_more_guests(event_id):
         db.session.add(invitation)
         db.session.commit()
 
+        user = User.query.filter(User.user_id == invitee).first()
+        event = Event.query.filter(Event.event_id == event_id).first()
+
+        # send text notification
+        client = Client(account_sid, auth_token)
+        client.api.account.messages.create(
+            to="+14159907366",
+            from_="+14158516073 ",
+            body="Hey {name}, you have an invite from {creator}!\nCheck it out at http://localhost:5000/event/{event_id}".format(
+                                                                                                                                 name=user.name,
+                                                                                                                                 creator=event.creator.name, 
+                                                                                                                                 event_id=event_id
+                                                                                                                                 )
+        )
+
+        print "User={name} Creator={creator}".format(name=user.name, creator=event.creator.name)
 
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
+
+    
+
+
 # # HOW DO I TEST FOR THIS?
-# @app.route('/invite-notification/<event_id>')
+# @app.route('/txt-notification/<event_id>')
 # def invite_text(event_id):
 #     """Sends a notificaiton via text."""
 
+#     client = Client(account_sid, auth_token)
 #      # by inivitations joined at that one event?
 #     invitations = Invitation.query.filter(Invitation.event_id == event_id).all()
 
+#     # client.messages.create()
 #     for user in invitations:
 #         client.api.account.messages.create(
-#             to="+1415" + str({{ user.invitee.phone }}),
+#             to="+14159907366",
 #             from_="+14158516073 ",
 #             body="You have an invite from {{ invitations.event.creator.name }}!\nCheck it out at http://localhost:5000/event/{{ event.event_id }}"
 #             )
 
-#     return invitations.event.creator.name
+#     return "Sent a notification!"
 
 
 # NEW USERS

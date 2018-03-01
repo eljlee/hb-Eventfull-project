@@ -52,10 +52,12 @@ class Event(db.Model):
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "< Event event_id={} title={} start_at={} end_at={} >".format(self.event_id, 
+        return "< Event event_id={} title={} start_at={} end_at={} creator={} public={}>".format(self.event_id, 
                                                                              self.title, 
                                                                              self.start_at, 
-                                                                             self.end_at
+                                                                             self.end_at,
+                                                                             self.creator_id,
+                                                                             self.public
                                                                              )
 
 
