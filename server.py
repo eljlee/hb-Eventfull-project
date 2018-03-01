@@ -61,7 +61,7 @@ def login():
 
     else:
         flash('Sorry, incorrect login.')
-        return redirect('/login')
+        return redirect('/')
 
 
 # USER PROFILE
@@ -306,6 +306,21 @@ def create_event():
         db.session.add(invitation)
         db.session.commit()
 
+        user = User.query.filter(User.user_id == invitee).first()
+        event = Event.query.filter(Event.event_id == event_id).first()
+
+        # send personalized text notification
+        client = Client(account_sid, auth_token)
+        client.api.account.messages.create(
+            to="+14159907366",
+            from_="+14158516073 ",
+            body="Hey {name}, you have an invite from {creator}!\nCheck it out at http://localhost:5000/event/{event_id}".format(
+                                                                                                                                 name=user.name,
+                                                                                                                                 creator=event.creator.name, 
+                                                                                                                                 event_id=event_id
+                                                                                                                                 )
+        )
+
     flash('Event created!')
 
     return redirect('/event-page/{id}'.format(id=new_event.event_id))
@@ -413,7 +428,7 @@ def invite_more_guests(event_id):
         user = User.query.filter(User.user_id == invitee).first()
         event = Event.query.filter(Event.event_id == event_id).first()
 
-        # send text notification
+        # send personalized text notification
         client = Client(account_sid, auth_token)
         client.api.account.messages.create(
             to="+14159907366",
@@ -425,32 +440,8 @@ def invite_more_guests(event_id):
                                                                                                                                  )
         )
 
-        print "User={name} Creator={creator}".format(name=user.name, creator=event.creator.name)
-
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
-
-    
-
-
-# # HOW DO I TEST FOR THIS?
-# @app.route('/txt-notification/<event_id>')
-# def invite_text(event_id):
-#     """Sends a notificaiton via text."""
-
-#     client = Client(account_sid, auth_token)
-#      # by inivitations joined at that one event?
-#     invitations = Invitation.query.filter(Invitation.event_id == event_id).all()
-
-#     # client.messages.create()
-#     for user in invitations:
-#         client.api.account.messages.create(
-#             to="+14159907366",
-#             from_="+14158516073 ",
-#             body="You have an invite from {{ invitations.event.creator.name }}!\nCheck it out at http://localhost:5000/event/{{ event.event_id }}"
-#             )
-
-#     return "Sent a notification!"
 
 
 # NEW USERS
