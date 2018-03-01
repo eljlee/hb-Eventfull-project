@@ -38,11 +38,11 @@
 
       {% else %}
       <li class="nav-item">
-        <a class="nav-link" href="#" id="login" link="login">Login</a>
+        <a class="nav-link" href="#" id="login">Login</a>
       </li>
 
       <li class="nav-item">
-        <a class="nav-link" href="registration-form">Register New user</a>
+        <a class="nav-link" href="#" id="register">Register New user</a>
       </li>
       {% endif %}
     </ul>
@@ -75,7 +75,7 @@
         <div class="modal-content">
 
           <div class="modal-header">
-            <h4 class="modal-title">Logging in</h4>
+            <h4 class="modal-title">Welcome back!</h4>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
           </div>
 
@@ -83,11 +83,39 @@
             <div class="modal-body">
               <p><input type='email' name='user_email' placeholder='Email'></input></p>
               <p><input type='password' name='user_password' placeholder='Password'></input></p>
-              <p><input type='submit' value='Log In'></input></p>
             </div>
+            <a href="#" id="register2">New? Register Here!
+            </a>
 
             <div class="modal-footer">
-              <input type='submit' value='Submit'></input>
+              <input type='submit' value='Log In'></input>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- New users -->
+    <div id="registerModal" class="modal fade" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+      <div class="modal-dialog modal-md">
+        <!-- Modal content-->
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h4 class="modal-title">Welcome!</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+
+          <form action='/new-user' method='POST'>
+            <div class="modal-body">
+              <p><input type ='text' name='new_user_name' placeholder='Full Name' autofocus></p>
+              <p><input type='email' name='new_user_email' placeholder='Email'></input></input></p>
+              <p><input type='password' name='new_user_password' placeholder='Password'></p>
+              <p><input type ='tel' name='new_user_phone' placeholder='Phone'></input>
+            </div>
+            <div class="modal-footer">
+              <input type='submit' value='Register'></input>
             </div>
           </form>
 
@@ -98,6 +126,15 @@
     <script>
       $('#login').click(function() {
         $('#loginModal').modal('show');
+      });
+
+      $('#register').click(function() {
+        $('#registerModal').modal('show');
+      });
+
+      $('#register2').click(function() {
+        $('#loginModal').modal('hide')
+        $('#registerModal').modal('show');
       });
       
     </script>
