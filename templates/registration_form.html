@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Registration Form</h2>
+
+<form action='/new-user' method='POST'>
+	<input type ='text' name='new_user_name' placeholder='Full Name' autofocus></input>
+	<br><br>
+    <input type='email' name='new_user_email' placeholder='Email'></input>
+    <br><br>
+    <input type='password' name='new_user_password' placeholder='Password'></input>
+    <br><br>
+    <input type ='tel' name='new_user_phone' placeholder='Phone'></input>
+    <br><br>
+    <input type='submit' value='Register'></input>
+</form>
+
+
+{% endblock %}

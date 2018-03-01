@@ -1,0 +1,20 @@
+<!-- OBSOLETE -->
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- REACTIFY? -->
+<h2>Edit profile</h2>
+
+<form action='/edit-profile/{{ user.user_id }}' method='POST' enctype=multipart/form-data>
+	Name: <input type ='text' name='name' placeholder='{{ user.name}}'></input><br><br>
+
+	Email: <input type ='email' name='email' placeholder='{{ user.email }}'></input><br><br>
+
+	Phone: <input type ='phone' name='phone' placeholder='{{ user.phone }}'></input><br><br>
+
+	Upload file: <input type='file' name='image'></input><br><br>
+	
+	<input type=submit value='Save'></input>
+</form>
+
+{% endblock %}

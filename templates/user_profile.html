@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block content %}
+<script src="/static/schedule_manager/codebase/dhtmlxscheduler.js" type="text/javascript">
+</script>
+<script src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+<script src="/static/schedule_manager/codebase/ext/dhtmlxscheduler_editors.js">
+</script>
+<link rel="stylesheet" href="/static/schedule_manager/codebase/dhtmlxscheduler.css" type="text/css">
+
+
+<h2>{{ user.name }}</h2>
+
+<img src="/static/uploads/{{ user.image }}" style="width:30%;height:45%;" class="img-thumbnail">
+
+<!-- Let user edit their profile -->
+{% if session.get('user_id') == user.user_id %}
+    <div>
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#editProfileModal">
+          Edit profile
+        </button>
+    </div>
+
+{% else %}
+    <!-- Make into js? -->
+    {% if current_user_friendship  %}
+         <form action ='/unfriending/{{ user.user_id }}' method='POST'>
+            <button>Unfriend</button>
+        </form>
+
+    {% else %}
+        <form action ='/friending/{{ user.user_id }}' method='POST'>
+            <button>Friend</button>
+        </form>
+    {% endif %}
+
+{% endif %}<br>
+
+
+<!-- Personal info, calendar and events will show if it's user's profile or their friend's -->
+
+{% if session.get('user_id') == user.user_id or session.get('user_id') in friend_list %}
+Email: {{ user.email }}<br>
+
+Phone: {{ user.phone }}<br><br>
+
+    <!-- CALENDAR DISPLAY -->
+    <body onload="init();">
+        <div id="scheduler_here" class="dhx_cal_container" style='width:800px; height:500px; padding:30px;'>
+            <div class="dhx_cal_navline">
+                <div class="dhx_cal_prev_button">&nbsp;</div>
+                <div class="dhx_cal_next_button">&nbsp;</div>
+                <div class="dhx_cal_today_button"></div>
+                <div class="dhx_cal_date"></div>
+                <div class="dhx_cal_tab" name="day_tab" style="right:204px;"></div>
+                <div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div>
+                <div class="dhx_cal_tab" name="month_tab" style="right:76px;"></div>
+            </div>
+            <div class="dhx_cal_header"></div>
+            <div class="dhx_cal_data"></div>       
+        </div>
+    </body>
+
+
+    <script type="text/javascript" charset="utf-8">
+            function init() {
+
+                // initiates calendar
+                scheduler.config.xml_date="%Y-%m-%d %H:%i";
+                scheduler.init('scheduler_here', new Date(),"month");
+                scheduler.config.details_on_dblclick=true;
+                scheduler.config.details_on_create=true;
+
+                // creating event box
+                scheduler.config.lightbox.sections = [
+                    {name: "Title", height: 40, map_to: "text", type: "textarea", focus: true},
+                    { name:"Private", map_to:"single_checkbox", type:"checkbox", checked_value: true},
+                    {name: "time", height: 72, map_to: "auto", type: "time"}
+                ];
+
+
+                function eventConfirmation(){
+                    alert("Event created!")
+                }
+
+                // getting event info and post to route to update db
+                scheduler.attachEvent("onEventAdded",function(id,ev){
+                    x = scheduler.getEvent(id)
+                    let newEvent = {
+                        "start_date": x.start_date,
+                        "end_date": x.end_date,
+                        "title": scheduler.getEventText(id)
+                    }
+                    $.post('/calendar-events', newEvent, eventConfirmation);
+                    return true
+                });
+
+                // possibly update event?
+                // scheduler.attachEvent("onEventSave",function(id,ev){
+                //     scheduler.getEvent(eventId).text;
+                //     scheduler.updateEvent(eventId);
+
+                // }
+
+                // ajax call to route that will query db for invitations and events user has created
+                function getEvents() {
+                    $.get('/db-events.json/{{ user.user_id }}', function(results) {
+                        scheduler.parse(results['invites'], "json");
+                        scheduler.parse(results['hostings'], "json");
+                    });
+                }
+                getEvents();
+
+            }     
+    </script>
+
+    Double click on a date to create a quick event, or
+    <a href='/create-event'>click here</a>.<br><br>
+
+
+    <!-- Events created. -->
+    <h3>Events created:</h3>
+    <ul>
+    	{% for event in events %}
+    	<li><a href='/event-page/{{ event.event_id }}'>{{ event.title }}</a></li>
+    	{% endfor %}
+    </ul>
+
+     <!-- Events invited to. -->
+    <h3>Events invited to:</h3>
+    <ul>
+    	{% for invitation in invitations %}
+    	<li>{{ invitation.event.creator.name }} - <a href='/event-page/{{ invitation.event_id }}'>{{ invitation.event.title }}</a>
+        </li>
+    	{% endfor %}
+    </ul>
+{% endif %}
+
+
+<!-- Friends list -->
+<h3>Friends</h3>
+<ul>
+    {% for friend in user.friends %}
+    <li>
+        <div class="media">
+            <a href='/user/{{ friend.user_id }}'>
+              <img class="align-self-center mr-3 img-thumbnail" src="/static/uploads/{{ friend.image }}" style="width:100px;height:100px" >
+              <div class="media-body">
+                {{ friend.name }}
+              </div>
+            </a>
+        </div>
+    </li>
+    <br>
+    {% endfor %}
+</ul>
+
+
+<!-- Modal to edit profile. -->
+<div id="editProfileModal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-md">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Edit info</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+            <form action='/edit-profile/{{ user.user_id }}' method='POST' enctype=multipart/form-data>
+              <div class="modal-body" align="center">
+                <p>Name: <input type ='text' name='name' placeholder='{{ user.name}}'></input>
+                </p>
+                <p>Email: <input type ='email' name='email' placeholder='{{ user.email }}'></input>
+                </p>
+                <p>Phone: <input type ='phone' name='phone' placeholder='{{ user.phone }}'></input>
+                </p>
+                <p>Upload file: <input type='file' name='image'></input>
+                </p>
+              </div>
+              <div class="modal-footer">
+                <input type='submit' value='Save'></input>
+                <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+              </div>
+            </form>
+        </div>
+
+      </div>
+    </div>
+
+
+{% endblock %}

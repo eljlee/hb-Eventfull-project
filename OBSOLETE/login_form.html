@@ -1,0 +1,15 @@
+<!-- OBSOLETE -->
+{% extends 'base.html' %}
+{% block content %}
+
+<title>Login</title>
+
+<form action='/login' method='POST'>
+    <input type='email' name='user_email' placeholder='Email'></input>
+    <br><br>
+    <input type='password' name='user_password' placeholder='Password'></input
+    <br><br>
+    <input type='submit' value='Log In'></input>
+</form>
+
+{% endblock %}
