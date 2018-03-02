@@ -12,7 +12,7 @@
 
 <h2>{{ user.name }}</h2>
 
-<img src="/static/uploads/{{ user.image }}" style="width:30%;height:45%;" class="img-thumbnail">
+<img src="/static/picture_uploads/{{ user.image }}" style="width:30%;height:45%;" class="img-thumbnail">
 
 <!-- Let user edit their profile -->
 {% if session.get('user_id') == user.user_id %}
@@ -23,7 +23,6 @@
     </div>
 
 {% else %}
-    <!-- Make into js? -->
     {% if current_user_friendship  %}
          <form action ='/unfriending/{{ user.user_id }}' method='POST'>
             <button>Unfriend</button>
@@ -63,26 +62,36 @@ Phone: {{ user.phone }}<br><br>
     </body>
 
 
+
     <script type="text/javascript" charset="utf-8">
             function init() {
 
                 // initiates calendar
+                
                 scheduler.config.xml_date="%Y-%m-%d %H:%i";
-                scheduler.init('scheduler_here', new Date(),"month");
                 scheduler.config.details_on_dblclick=true;
                 scheduler.config.details_on_create=true;
-                scheduler.config.auto_start_date = 
                 scheduler.config.event_duration = 60; //specify event duration in minutes for auto end time
                 scheduler.config.auto_end_date = true;
                 scheduler.config.full_day = true;
+                scheduler.config.first_hour = 8;
+                scheduler.config.start_on_monday = false;
+                scheduler.init('scheduler_here', new Date(),"month");
+                
+                if ({{ session.get('user_id')}} != {{ user.user_id }}) {
+                    scheduler.config.readonly = true;
+                }
+                
 
 
                 // creating event box
                 scheduler.config.lightbox.sections = [
                     {name: "Title", height: 40, map_to: "text", type: "textarea", focus: true},
-                    { name:"Private", map_to:"single_checkbox", type:"checkbox", checked_value: true},
-                    {name: "time", height: 72, map_to: "auto", type: "time"}
+                    {name:"Location", height:43, type:"textarea", map_to:"event_location"},
+                    {name: "Time", height: 72, map_to: "auto", type: "time"}
                 ];
+
+                // {name:"Private", map_to:"single_checkbox", type:"checkbox", checked_value: true},
 
 
                 function eventConfirmation(){
@@ -93,9 +102,10 @@ Phone: {{ user.phone }}<br><br>
                 scheduler.attachEvent("onEventAdded",function(id,ev){
                     x = scheduler.getEvent(id)
                     let newEvent = {
+                        "title": scheduler.getEventText(id),
+                        "location": scheduler.getEvent(id).event_location,
                         "start_date": x.start_date,
-                        "end_date": x.end_date,
-                        "title": scheduler.getEventText(id)
+                        "end_date": x.end_date
                     }
                     $.post('/calendar-events', newEvent, eventConfirmation);
                     return true
@@ -117,13 +127,12 @@ Phone: {{ user.phone }}<br><br>
                 }
                 getEvents();
 
-                
             }
-           
     </script>
-
-    Double click on a date to create a quick event, or
-    <a href='/create-event'>click here</a>.<br><br>
+    {% if session.get('user_id') == user.user_id %}
+        Double click on a date to create a quick event, or
+        <a href='/create-event'>click here</a>.<br><br>
+    {% endif %}
 
 
     <!-- Events created. -->

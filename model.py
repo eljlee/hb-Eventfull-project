@@ -38,10 +38,12 @@ class Event(db.Model):
 
     event_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(64), nullable=False)
+    location = db.Column(db.String(128), nullable=True)
     start_at = db.Column(db.DateTime, nullable=False)
     end_at = db.Column(db.DateTime, nullable=False)
+    note = db.Column(db.String(64), nullable=True)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-    public = db.Column(db.Boolean, nullable=True)
+
 
     creator = db.relationship('User', backref=db.backref('created_events'))
 
@@ -52,12 +54,14 @@ class Event(db.Model):
     def __repr__(self):
         """Provide helpful representation when printed."""
 
-        return "< Event event_id={} title={} start_at={} end_at={} creator={} public={}>".format(self.event_id, 
+        return "< Event event_id={} title={} location={} start_at={} end_at={} note={} creator={}>".format(
+                                                                             self.event_id, 
                                                                              self.title, 
+                                                                             self.location,
                                                                              self.start_at, 
                                                                              self.end_at,
+                                                                             self.note,
                                                                              self.creator_id,
-                                                                             self.public
                                                                              )
 
 

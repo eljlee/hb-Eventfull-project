@@ -17,7 +17,7 @@ account_sid = "ACb630b7f56b10119e369292a6afaa4449"
 auth_token = "a541fec3e2e5b3e03c67d5a84c649dab"
 
 # Uploading image file into project folder
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = 'static/picture_uploads'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg'])
 
 
@@ -170,9 +170,7 @@ def fine_specific_user():
 def edit_profile_template(user_id):
     """Profile edit template."""
 
-    user = User.query.filter(User.user_id == session['user_id']).first()
-
-    return render_template('edit_profile.html', user=user)
+    return render_template('edit_profile.html', user=User.query.filter(User.user_id == session['user_id']).first())
 
 
 @app.route('/edit-profile/<user_id>', methods=['POST'])
@@ -208,18 +206,18 @@ def get_events_from_cal():
     """Recieve events made on calendar, and udpate db."""
 
     title = request.form.get('title')
+    location = request.form.get('location')
     start = str(request.form.get('start_date'))
     day, month, date, year, time, blank1, zone = start.split()
     start_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-    print start_time
 
     end = str(request.form.get('end_date'))
     day, month, date, year, time, blank1, zone = end.split()
     end_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-    print end_time
 
     new_event = Event(
         title=title,
+        location=location,
         start_at=start_time, 
         end_at=end_time,
         creator_id=session['user_id']
@@ -239,27 +237,34 @@ def get_events_from_db(user_id):
     # should get all the events user has created
     hostings = Event.query.filter(Event.creator_id == user_id).all()
 
+    print invitations
+    print hostings
+
     events_invited = []
     for invitation in invitations:
         event_info = {}
         event_info = {
+            'text': str(invitation.event.title),
+            'event_location': str(invitation.event.location),
             'start_date': str(invitation.event.start_at), 
             'end_date': str(invitation.event.end_at), 
-            'text': str(invitation.event.title)
             }
 
         events_invited.append(event_info)
+        print "Got events"
 
     events_hosting = []
     for hosting in hostings:
         event_info = {}
         event_info = {
+            'text': str(hosting.title),
+            'event_location': str(hosting.location),
             'start_date': str(hosting.start_at), 
             'end_date': str(hosting.end_at), 
-            'text': str(hosting.title)
             }
 
         events_hosting.append(event_info)
+        print "Got invites"
 
 
     # made into a single key-value dict of a list of dicts
@@ -283,18 +288,16 @@ def create_event():
     """Register new event."""
 
     title = request.form.get('title')
+    location = request.form.get('location')
     start_time = request.form.get('start_date')
     end_time = request.form.get('end_date')
 
-    public_str = request.form.get('public')
-    public = public_str == 'public'
-
     new_event = Event(
         title=title,
+        location=location,
         start_at=start_time, 
         end_at=end_time,
         creator_id=session['user_id'], 
-        public=public
         )
     db.session.add(new_event)
     db.session.commit()

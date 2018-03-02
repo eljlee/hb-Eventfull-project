@@ -48,44 +48,34 @@ Hosted by: <a href='/user/{{ event_info.creator.user_id }}'>{{ event_info.creato
 Contact: {{ event_info.creator.phone }}<br><br>
 
 <!-- Note: {{ event_info.note }} -->
-When: {{ event_info.start_at }}<br>
-Until: {{ event_info.end_at }}<br><br>
+<div>Where: {{ event_info.location }}</div>
+<div>When: {{ event_info.start_at }}</div>
+<div>Until: {{ event_info.end_at }}</div>
 
-<!-- <p>
-  <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-    Link with href
-  </a>
-  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-    Button with data-target
-  </button>
-</p>
-<div class="collapse" id="collapseExample">
-  <div class="card card-body">
-    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-  </div>
-</div> -->
 
 <!-- If creator, can invite friends who are not already invited. -->
 {% if session.get('user_id') == event_info.creator.user_id %}
 	<!-- Collapsible panel for inviting more friends.-->
-	<div class="panel-group">
-	  <div class="panel panel-default">
-	    <div class="panel-heading">
-	      <h4 class="panel-title">
-	        <a data-toggle="collapse" href="#collapse1">Click to invite more friends</a>
-	      </h4>
-	    </div>
-	    <div id="collapse1" class="panel-collapse collapse">
-	    	<form action='/invite-more/{{ event_info.event_id }}' method='POST'>
-	    	{% for friend in uninvited_friends %}
-			  	<div class="panel-body"><input type='checkbox' name='friend' value='{{ friend.user_id }}'>{{ friend.name }}</div>
-			{% endfor %}
-			  <div class="panel-footer"><input type='submit' value='Invite'></input></div>
-			</form>
+	<div>
+		<div class="panel-group">
+		  <div class="panel panel-default">
+		    <div class="panel-heading">
+		      <h4 class="panel-title">
+		        <a data-toggle="collapse" href="#collapse1">Click to invite more friends</a>
+		      </h4>
+		    </div>
+		    <div id="collapse1" class="panel-collapse collapse">
+		    	<form action='/invite-more/{{ event_info.event_id }}' method='POST'>
+		    	{% for friend in uninvited_friends %}
+				  	<div class="panel-body"><input type='checkbox' name='friend' value='{{ friend.user_id }}'>{{ friend.name }}</div>
+				{% endfor %}
+				  <div class="panel-footer"><input type='submit' value='Invite'></input></div>
+				</form>
 
-	    </div>
-	  </div>
-	</div><br><br>
+		    </div>
+		  </div>
+		</div>
+	</div>
 {% endif %}
 
 
