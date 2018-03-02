@@ -71,6 +71,11 @@ Phone: {{ user.phone }}<br><br>
                 scheduler.init('scheduler_here', new Date(),"month");
                 scheduler.config.details_on_dblclick=true;
                 scheduler.config.details_on_create=true;
+                scheduler.config.auto_start_date = 
+                scheduler.config.event_duration = 60; //specify event duration in minutes for auto end time
+                scheduler.config.auto_end_date = true;
+                scheduler.config.full_day = true;
+
 
                 // creating event box
                 scheduler.config.lightbox.sections = [
@@ -112,7 +117,9 @@ Phone: {{ user.phone }}<br><br>
                 }
                 getEvents();
 
-            }     
+                
+            }
+           
     </script>
 
     Double click on a date to create a quick event, or
