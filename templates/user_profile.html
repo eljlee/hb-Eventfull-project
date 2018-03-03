@@ -68,7 +68,6 @@ Phone: {{ user.phone }}<br><br>
             function init() {
 
                 // initiates calendar
-                
                 scheduler.config.xml_date="%Y-%m-%d %H:%i";
                 scheduler.config.details_on_dblclick=true;
                 scheduler.config.details_on_create=true;
@@ -122,20 +121,14 @@ Phone: {{ user.phone }}<br><br>
 
                 });
 
-                scheduler.attachEvent("onEventDeleted", function(id){
+                scheduler.attachEvent("onBeforeEventDelete", function(id,e){
                     let x = scheduler.getEvent(id)
-                    let event_id = x.event_id
-                    console.log(x)
-                    // let deleteEvents = {
-                        // "title": scheduler.getEventText(id),
-                        // "location": scheduler.getEvent(id).event_location,
-                        // "start_date": x.start_date,
-                        // "end_date": x.end_date,
-                    //     "event_id": x.event_id
-                    // }
-                     // scheduler.deleteEvent(id);
-                    $.post('/delete-event', event_id, eventConfirmation);
-                    return true
+                    let deleteEvents = {
+                        "event_id": x.event_id
+                    }
+
+                    $.post('/delete-event', deleteEvents, eventConfirmation);
+                    return true;
                 });
         
 

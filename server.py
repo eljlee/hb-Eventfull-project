@@ -111,12 +111,39 @@ def user_profile(user_id):
                            )
 
 
+# USER PROFILE - EDIT
+#############################################################
+@app.route('/edit-profile/<user_id>', methods=['POST'])
+def edit_profile(user_id):
+    """Editing profile."""
+
+    user = User.query.filter(User.user_id == session['user_id']).first()
+
+    if request.form.get('name'):
+        user.name = request.form.get('name')
+    if request.form.get('email'):
+        user.email = request.form.get('email')
+    if request.form.get('phone'):
+        user.phone = request.form.get('phone')
+
+    # get file class of image
+    image = request.files['image']
+    if image:
+        # get actual file name
+        filename = secure_filename(image.filename)
+        user.image = filename
+        image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+    db.session.commit()
+
+    return redirect('/user/{user_id}'.format(user_id=session['user_id']))
+
+
 # FRIENDING // UNFRIENDING // SEARCHING
 ##############################################################
 @app.route('/friending/<user_id>', methods=['POST'])
 def befriending(user_id):
     """Friending between session user and another user."""
-
 
     existing_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
                                                   Friendship.friend_2_id == user_id).first()
@@ -174,41 +201,6 @@ def fine_specific_user():
         return redirect('/')
 
 
-# USER PROFILE - EDIT
-#############################################################
-# @app.route('/edit-profile/<user_id>')
-# def edit_profile_template(user_id):
-    # """Profile edit template."""
-    # OBSOLETE
-
-    # return render_template('edit_profile.html', user=User.query.filter(User.user_id == session['user_id']).first())
-
-
-@app.route('/edit-profile/<user_id>', methods=['POST'])
-def edit_profile(user_id):
-    """Editing profile."""
-
-    user = User.query.filter(User.user_id == session['user_id']).first()
-
-    if request.form.get('name'):
-        user.name = request.form.get('name')
-    if request.form.get('email'):
-        user.email = request.form.get('email')
-    if request.form.get('phone'):
-        user.phone = request.form.get('phone')
-
-    # get file class of image
-    image = request.files['image']
-    if image:
-        # get actual file name
-        filename = secure_filename(image.filename)
-        user.image = filename
-        image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-    db.session.commit()
-
-    return redirect('/user/{user_id}'.format(user_id=session['user_id']))
-
 
 # ACTIVITIES ON CALENDAR
 ##############################################################
@@ -236,7 +228,7 @@ def get_events_from_cal():
     db.session.add(new_event)
     db.session.commit()
 
-    return "Calendar event."
+    return redirect('/user/{user_id}'.format(user_id=session['user_id']))
 
 @app.route('/update-event', methods=['POST'])
 def editing_event():
@@ -257,7 +249,7 @@ def editing_event():
 
     db.session.commit()
 
-    return "Calendar updated!"
+    return redirect('/user/{user_id}'.format(user_id=session['user_id']))
 
 
 @app.route('/delete-event', methods=['POST'])
@@ -267,10 +259,10 @@ def delete_event():
     event_id = request.form.get('event_id')
     cal_event_db_event = Event.query.filter(Event.event_id == event_id).first()
 
-    print cal_event_db_event
+    db.session.delete(cal_event_db_event)
+    db.session.commit()
 
-    # db.session.delete(cal_event_db_event)
-    # db.session.commit()
+    return redirect('/user/{user_id}'.format(user_id=session['user_id']))
 
 
 @app.route('/db-events.json/<user_id>')
