@@ -4,16 +4,13 @@
 
 
 <form action='/create-event' method='POST'>
-    Title: <input type='text' name='title'></input>
-    <br><br>
-    Note: <textarea name='note' placeholder='Enter a note...'></textarea>
-    <br><br>
-    Start: <input type='datetime-local' name='start_date'></input>
-    <!-- <input type ='time' name='start_time'></input> -->
-    <br><br>
-    End: <input type='datetime-local' name='end_date'></input>
-    <!-- <input type ='time' name='end_time'></input> -->
-    <br><br>
+    <div >
+        <p>Title: <input type='text' name='title'></input></p>
+        <p>Location: <input type='text' name='location' placeholder='Where is it at?'></textarea></p>
+        <p>Start: <input type='datetime-local' name='start_date'></input></p>
+        <p>End: <input type='datetime-local' name='end_date'></input></p>
+        <p>Note: <textarea name='note' placeholder='Enter a note...'></textarea></p>
+    </div>
 
    <!--  <form action='/invite'>
     event_info.event_id -->

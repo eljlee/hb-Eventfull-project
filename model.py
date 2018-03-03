@@ -61,7 +61,7 @@ class Event(db.Model):
                                                                              self.start_at, 
                                                                              self.end_at,
                                                                              self.note,
-                                                                             self.creator_id,
+                                                                             self.creator_id
                                                                              )
 
 

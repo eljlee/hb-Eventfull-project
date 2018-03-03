@@ -21,21 +21,15 @@
 
       {% if session.get('user_id') %}
       <li class="nav-item dropdown active">
-        <!-- Won't dropdown while on an event page. -->
-
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropDownMenuLink" data-toggle="dropdown" 
         aria-haspopup="true" aria-expanded="false">Profile <span class="sr-only">(current)</span></a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           <a class="dropdown-item" href="/user">Your Planner</a>
           <!-- <a class="dropdown-item" href="#">Another action</a>
           <a class="dropdown-item" href="#">Something else here</a> -->
+          <a class="dropdown-item" href="/logout">Logout</a>
         </div>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link" href="/logout">Logout</a>
-      </li>
-
+     
       {% else %}
       <li class="nav-item">
         <a class="nav-link" href="#" id="login">Login</a>
@@ -71,9 +65,7 @@
 {% if not session.get('user_id') %}
   <div id="loginModal" class="modal fade" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
       <div class="modal-dialog modal-md">
-        <!-- Modal content-->
         <div class="modal-content">
-
           <div class="modal-header">
             <h4 class="modal-title">Welcome back!</h4>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -96,12 +88,10 @@
       </div>
     </div>
 
-    <!-- New users -->
+    <!--Modal for registering new users -->
     <div id="registerModal" class="modal fade" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
       <div class="modal-dialog modal-md">
-        <!-- Modal content-->
         <div class="modal-content">
-
           <div class="modal-header">
             <h4 class="modal-title">Welcome!</h4>
             <button type="button" class="close" data-dismiss="modal">&times;</button>

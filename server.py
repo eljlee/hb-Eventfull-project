@@ -81,13 +81,21 @@ def valid_user():
 @app.route('/user/<user_id>')
 def user_profile(user_id):
     """User's account page."""
-
+    now = datetime.datetime.today()
     # gathering user info, events invited to and created, and their friends
     # to be displayed onto their profile page
     user = User.query.filter(User.user_id == user_id).first()
     invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     events = Event.query.filter(Event.creator_id == user_id).all()
     friends = Friendship.query.filter(Friendship.friend_1_id == user_id).all()
+
+    upcoming_events = []
+    for invitation in invitations:
+        if invitation.event.end_at > now:
+            upcoming_events.append(invitation)
+    upcoming_events.reverse()
+    
+
     current_user_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
                                                       Friendship.friend_2_id == user_id).first()
 
@@ -98,7 +106,9 @@ def user_profile(user_id):
 
 
     return render_template('user_profile.html', user=user, events=events, invitations=invitations, 
-                           friend_list=friend_list, current_user_friendship=current_user_friendship)
+                           friend_list=friend_list, current_user_friendship=current_user_friendship, 
+                           upcoming_events=upcoming_events
+                           )
 
 
 # FRIENDING // UNFRIENDING // SEARCHING
@@ -166,11 +176,12 @@ def fine_specific_user():
 
 # USER PROFILE - EDIT
 #############################################################
-@app.route('/edit-profile/<user_id>')
-def edit_profile_template(user_id):
-    """Profile edit template."""
+# @app.route('/edit-profile/<user_id>')
+# def edit_profile_template(user_id):
+    # """Profile edit template."""
+    # OBSOLETE
 
-    return render_template('edit_profile.html', user=User.query.filter(User.user_id == session['user_id']).first())
+    # return render_template('edit_profile.html', user=User.query.filter(User.user_id == session['user_id']).first())
 
 
 @app.route('/edit-profile/<user_id>', methods=['POST'])
@@ -209,23 +220,57 @@ def get_events_from_cal():
     location = request.form.get('location')
     start = str(request.form.get('start_date'))
     day, month, date, year, time, blank1, zone = start.split()
-    start_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+    start_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M')
 
     end = str(request.form.get('end_date'))
     day, month, date, year, time, blank1, zone = end.split()
-    end_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+    end_time = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M')
 
     new_event = Event(
         title=title,
         location=location,
         start_at=start_time, 
         end_at=end_time,
-        creator_id=session['user_id']
+        creator_id=session['user_id'],
         )
     db.session.add(new_event)
     db.session.commit()
 
     return "Calendar event."
+
+@app.route('/update-event', methods=['POST'])
+def editing_event():
+    """Allowed to makes changes to an event (on calendar?)."""
+
+    event_id = request.form.get('event_id')
+    cal_event_db_event = Event.query.filter(Event.event_id == event_id).first()
+
+    cal_event_db_event.title = request.form.get('title')
+    cal_event_db_event.location = request.form.get('location')
+    start = str(request.form.get('start_date'))
+    day, month, date, year, time, blank1, zone = start.split()
+    cal_event_db_event.start_at = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M')
+
+    end = str(request.form.get('end_date'))
+    day, month, date, year, time, blank1, zone = end.split()
+    cal_event_db_event.end_at = datetime.datetime.strptime(year + month + date + time, '%Y%b%d%H:%M:%S').strftime('%Y-%m-%d %H:%M')
+
+    db.session.commit()
+
+    return "Calendar updated!"
+
+
+@app.route('/delete-event', methods=['POST'])
+def delete_event():
+    """Allowed to delete an event."""
+    
+    event_id = request.form.get('event_id')
+    cal_event_db_event = Event.query.filter(Event.event_id == event_id).first()
+
+    print cal_event_db_event
+
+    # db.session.delete(cal_event_db_event)
+    # db.session.commit()
 
 
 @app.route('/db-events.json/<user_id>')
@@ -237,9 +282,6 @@ def get_events_from_db(user_id):
     # should get all the events user has created
     hostings = Event.query.filter(Event.creator_id == user_id).all()
 
-    print invitations
-    print hostings
-
     events_invited = []
     for invitation in invitations:
         event_info = {}
@@ -248,10 +290,10 @@ def get_events_from_db(user_id):
             'event_location': str(invitation.event.location),
             'start_date': str(invitation.event.start_at), 
             'end_date': str(invitation.event.end_at), 
+            'event_id': invitation.event_id
             }
 
         events_invited.append(event_info)
-        print "Got events"
 
     events_hosting = []
     for hosting in hostings:
@@ -261,15 +303,17 @@ def get_events_from_db(user_id):
             'event_location': str(hosting.location),
             'start_date': str(hosting.start_at), 
             'end_date': str(hosting.end_at), 
+            'event_id': hosting.event_id
             }
 
         events_hosting.append(event_info)
-        print "Got invites"
 
 
     # made into a single key-value dict of a list of dicts
     results = {'invites': events_invited, 'hostings': events_hosting}
     return jsonify(results)
+
+
 
 
 # CREATE EVENT
@@ -290,14 +334,17 @@ def create_event():
     title = request.form.get('title')
     location = request.form.get('location')
     start_time = request.form.get('start_date')
+
     end_time = request.form.get('end_date')
+    note = request.form.get('note)')
 
     new_event = Event(
         title=title,
         location=location,
         start_at=start_time, 
         end_at=end_time,
-        creator_id=session['user_id'], 
+        note=note,
+        creator_id=session['user_id']
         )
     db.session.add(new_event)
     db.session.commit()
@@ -457,7 +504,6 @@ def invite_more_guests(event_id):
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
 
-
 # NEW USERS
 ##############################################################
 @app.route('/registration-form')
@@ -506,7 +552,7 @@ def validate_user():
 
     else:
         flash('Sorry, that email is already in use.')
-        return redirect('/registration-form')
+        return redirect('/')
 
 
 ##############################################################

@@ -7,6 +7,7 @@
   crossorigin="anonymous"></script>
 <script src="/static/schedule_manager/codebase/ext/dhtmlxscheduler_editors.js">
 </script>
+
 <link rel="stylesheet" href="/static/schedule_manager/codebase/dhtmlxscheduler.css" type="text/css">
 
 
@@ -76,31 +77,27 @@ Phone: {{ user.phone }}<br><br>
                 scheduler.config.full_day = true;
                 scheduler.config.first_hour = 8;
                 scheduler.config.start_on_monday = false;
-                scheduler.init('scheduler_here', new Date(),"month");
-                
                 if ({{ session.get('user_id')}} != {{ user.user_id }}) {
                     scheduler.config.readonly = true;
                 }
+                scheduler.init('scheduler_here', new Date(),"month");
                 
-
 
                 // creating event box
                 scheduler.config.lightbox.sections = [
                     {name: "Title", height: 40, map_to: "text", type: "textarea", focus: true},
-                    {name:"Location", height:43, type:"textarea", map_to:"event_location"},
+                    {name: "Location", height:50, type:"textarea", map_to:"event_location"},
                     {name: "Time", height: 72, map_to: "auto", type: "time"}
                 ];
 
-                // {name:"Private", map_to:"single_checkbox", type:"checkbox", checked_value: true},
-
 
                 function eventConfirmation(){
-                    alert("Event created!")
+                    alert("Event action!")
                 }
 
                 // getting event info and post to route to update db
                 scheduler.attachEvent("onEventAdded",function(id,ev){
-                    x = scheduler.getEvent(id)
+                    let x = scheduler.getEvent(id);
                     let newEvent = {
                         "title": scheduler.getEventText(id),
                         "location": scheduler.getEvent(id).event_location,
@@ -111,18 +108,44 @@ Phone: {{ user.phone }}<br><br>
                     return true
                 });
 
-                // possibly update event?
-                // scheduler.attachEvent("onEventSave",function(id,ev){
-                //     scheduler.getEvent(eventId).text;
-                //     scheduler.updateEvent(eventId);
+                // dhtmlx.message("You've cut event: <br/><b>"+ev.text+"</b>");
+                scheduler.attachEvent("onEventChanged", function(id,ev){
+                    let x = scheduler.getEvent(id)
+                    let updateEvents = {
+                        "title": scheduler.getEventText(id),
+                        "location": scheduler.getEvent(id).event_location,
+                        "start_date": x.start_date,
+                        "end_date": x.end_date,
+                        "event_id": x.event_id
+                    }
+                    $.post('/update-event', updateEvents, eventConfirmation);
 
-                // }
+                });
+
+                scheduler.attachEvent("onEventDeleted", function(id){
+                    let x = scheduler.getEvent(id)
+                    let event_id = x.event_id
+                    console.log(x)
+                    // let deleteEvents = {
+                        // "title": scheduler.getEventText(id),
+                        // "location": scheduler.getEvent(id).event_location,
+                        // "start_date": x.start_date,
+                        // "end_date": x.end_date,
+                    //     "event_id": x.event_id
+                    // }
+                     // scheduler.deleteEvent(id);
+                    $.post('/delete-event', event_id, eventConfirmation);
+                    return true
+                });
+        
 
                 // ajax call to route that will query db for invitations and events user has created
                 function getEvents() {
                     $.get('/db-events.json/{{ user.user_id }}', function(results) {
-                        scheduler.parse(results['invites'], "json");
                         scheduler.parse(results['hostings'], "json");
+                        scheduler.parse(results['invites'], "json");
+                        
+
                     });
                 }
                 getEvents();
@@ -144,6 +167,7 @@ Phone: {{ user.phone }}<br><br>
     </ul>
 
      <!-- Events invited to. -->
+     <!-- Past and future? -->
     <h3>Events invited to:</h3>
     <ul>
     	{% for invitation in invitations %}
@@ -151,6 +175,17 @@ Phone: {{ user.phone }}<br><br>
         </li>
     	{% endfor %}
     </ul>
+
+
+    <h4>Upcoming events:</h4>
+    <ul>
+        {% for upcoming_event in upcoming_events %}
+            <li>{{ upcoming_event.event.title }}
+            </li>
+        {% endfor %}
+    </ul>
+
+
 {% endif %}
 
 
@@ -161,7 +196,7 @@ Phone: {{ user.phone }}<br><br>
     <li>
         <div class="media">
             <a href='/user/{{ friend.user_id }}'>
-              <img class="align-self-center mr-3 img-thumbnail" src="/static/uploads/{{ friend.image }}" style="width:100px;height:100px" >
+              <img class="align-self-center mr-3 img-thumbnail" src="/static/picture_uploads/{{ friend.image }}" style="width:100px;height:100px" >
               <div class="media-body">
                 {{ friend.name }}
               </div>
