@@ -7,8 +7,8 @@
   crossorigin="anonymous"></script>
 <script src="/static/schedule_manager/codebase/ext/dhtmlxscheduler_editors.js">
 </script>
-
 <link rel="stylesheet" href="/static/schedule_manager/codebase/dhtmlxscheduler.css" type="text/css">
+<link rel="stylesheet" href="/static/calendar.css" type"text/css">
 
 
 <h2>{{ user.name }}</h2>
@@ -16,11 +16,40 @@
 <img src="/static/picture_uploads/{{ user.image }}" style="width:30%;height:45%;" class="img-thumbnail">
 
 <!-- Let user edit their profile -->
-{% if session.get('user_id') == user.user_id %}
+{% if session['user_id'] == user.user_id %}
     <div>
         <button type="button" class="btn btn-info" data-toggle="modal" data-target="#editProfileModal">
           Edit profile
         </button>
+    </div>
+    <!-- Modal to edit profile. -->
+    <div id="editProfileModal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-md">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Edit info</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+            <form action='/edit-profile/{{ user.user_id }}' method='POST' enctype=multipart/form-data>
+              <div class="modal-body" align="center">
+                <p>Name: <input type ='text' name='name' placeholder='{{ user.name}}'></input>
+                </p>
+                <p>Email: <input type ='email' name='email' placeholder='{{ user.email }}'></input>
+                </p>
+                <p>Phone: <input type ='phone' name='phone' placeholder='{{ user.phone }}'></input>
+                </p>
+                <p>Upload file: <input type='file' name='image'></input>
+                </p>
+              </div>
+              <div class="modal-footer">
+                <input type='submit' value='Save'></input>
+                <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+              </div>
+            </form>
+        </div>
+
+      </div>
     </div>
 
 {% else %}
@@ -34,13 +63,12 @@
             <button>Friend</button>
         </form>
     {% endif %}
-
 {% endif %}<br>
 
 
 <!-- Personal info, calendar and events will show if it's user's profile or their friend's -->
 
-{% if session.get('user_id') == user.user_id or session.get('user_id') in friend_list %}
+{% if session['user_id'] == user.user_id or session['user_id'] in friend_list %}
 Email: {{ user.email }}<br>
 
 Phone: {{ user.phone }}<br><br>
@@ -76,25 +104,35 @@ Phone: {{ user.phone }}<br><br>
                 scheduler.config.full_day = true;
                 scheduler.config.first_hour = 8;
                 scheduler.config.start_on_monday = false;
-                if ({{ session.get('user_id')}} != {{ user.user_id }}) {
+                if ({{ session['user_id']}} != {{ user.user_id }}) {
                     scheduler.config.readonly = true;
                 }
                 scheduler.init('scheduler_here', new Date(),"month");
                 
 
-                // creating event box
+                // Creating event box.
                 scheduler.config.lightbox.sections = [
                     {name: "Title", height: 40, map_to: "text", type: "textarea", focus: true},
                     {name: "Location", height:50, type:"textarea", map_to:"event_location"},
                     {name: "Time", height: 72, map_to: "auto", type: "time"}
                 ];
 
+                // Custom coloring for user and friends' events.
+                scheduler.templates.event_class = function (start, end, event) {
+                    // console.log(event, event.creator_id, {{ user.user_id }})
+                    if (event.creator_id == {{ user.user_id }}){
+                        return "user_event";
+                    }else{
+                        return "friend_event";
+                    }
+                };
+
 
                 function eventConfirmation(){
                     alert("Event action!")
                 }
 
-                // getting event info and post to route to update db
+                // Getting event info and post to route to update db.
                 scheduler.attachEvent("onEventAdded",function(id,ev){
                     let x = scheduler.getEvent(id);
                     let newEvent = {
@@ -130,55 +168,72 @@ Phone: {{ user.phone }}<br><br>
                     $.post('/delete-event', deleteEvents, eventConfirmation);
                     return true;
                 });
-        
 
-                // ajax call to route that will query db for invitations and events user has created
+                // Ajax call to route that will query db for invitations and events user has created.
                 function getEvents() {
                     $.get('/db-events.json/{{ user.user_id }}', function(results) {
                         scheduler.parse(results['hostings'], "json");
                         scheduler.parse(results['invites'], "json");
-                        
-
                     });
                 }
                 getEvents();
 
+
             }
     </script>
-    {% if session.get('user_id') == user.user_id %}
+    <!-- User can only have this option on their own profile. -->
+    {% if session['user_id'] == user.user_id %}
         Double click on a date to create a quick event, or
         <a href='/create-event'>click here</a>.<br><br>
     {% endif %}
 
-
     <!-- Events created. -->
-    <h3>Events created:</h3>
-    <ul>
-    	{% for event in events %}
-    	<li><a href='/event-page/{{ event.event_id }}'>{{ event.title }}</a></li>
-    	{% endfor %}
-    </ul>
+    <div class="panel-group">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h5 class="panel-title">
+            <a data-toggle="collapse" href="#eventsCreated">Events created</a>
+          </h5>
+        </div>
+        <div id="eventsCreated" class="panel-collapse collapse">
+            {% for event in events %}
+                <div class="panel-body"><a href='/event-page/{{ event.event_id }}'>{{ event.title }}</a></div>
+            {% endfor %}
+        </div>
+      </div>
+    </div>
 
-     <!-- Events invited to. -->
-     <!-- Past and future? -->
-    <h3>Events invited to:</h3>
-    <ul>
-    	{% for invitation in invitations %}
-    	<li>{{ invitation.event.creator.name }} - <a href='/event-page/{{ invitation.event_id }}'>{{ invitation.event.title }}</a>
-        </li>
-    	{% endfor %}
-    </ul>
+    <!-- Events invited to. -->
+    <!-- Past and future? -->
+    <div class="panel-group">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h5 class="panel-title">
+            <a data-toggle="collapse" href="#eventsInvited">Events invited to</a>
+          </h5>
+        </div>
+        <div id="eventsInvited" class="panel-collapse collapse">
+            {% for invitation in invitations %}
+                <div class="panel-body">{{ invitation.event.creator.name }} - <a href='/event-page/{{ invitation.event_id }}'>{{ invitation.event.title }}</a></div>
+            {% endfor %}
+        </div>
+      </div>
+    </div>
 
-
-    <h4>Upcoming events:</h4>
-    <ul>
-        {% for upcoming_event in upcoming_events %}
-            <li>{{ upcoming_event.event.title }}
-            </li>
-        {% endfor %}
-    </ul>
-
-
+    <div class="panel-group">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h5 class="panel-title">
+            <a data-toggle="collapse" href="#eventsUpcoming">Upcoming events</a>
+          </h5>
+        </div>
+        <div id="eventsUpcoming" class="panel-collapse collapse">
+            {% for upcoming_event in upcoming_events %}
+                <div class="panel-body">{{ upcoming_event.event.creator.name }} - <a href='/event-page/{{ upcoming_event.event_id }}'>{{ upcoming_event.event.title }}</a></div>
+            {% endfor %}
+        </div>
+      </div>
+    </div>
 {% endif %}
 
 
@@ -199,37 +254,4 @@ Phone: {{ user.phone }}<br><br>
     <br>
     {% endfor %}
 </ul>
-
-
-<!-- Modal to edit profile. -->
-<div id="editProfileModal" class="modal fade" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-md">
-        <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Edit info</h4>
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-          </div>
-            <form action='/edit-profile/{{ user.user_id }}' method='POST' enctype=multipart/form-data>
-              <div class="modal-body" align="center">
-                <p>Name: <input type ='text' name='name' placeholder='{{ user.name}}'></input>
-                </p>
-                <p>Email: <input type ='email' name='email' placeholder='{{ user.email }}'></input>
-                </p>
-                <p>Phone: <input type ='phone' name='phone' placeholder='{{ user.phone }}'></input>
-                </p>
-                <p>Upload file: <input type='file' name='image'></input>
-                </p>
-              </div>
-              <div class="modal-footer">
-                <input type='submit' value='Save'></input>
-                <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
-              </div>
-            </form>
-        </div>
-
-      </div>
-    </div>
-
-
 {% endblock %}

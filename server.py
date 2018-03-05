@@ -3,18 +3,14 @@ import os
 from flask import Flask, render_template, redirect, request, flash, session, jsonify, url_for
 # from flask_login import login_required
 # @login_required
-from twilio.rest import Client
-# from twilio.twiml.messaging_response import MessagingResponse
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug import secure_filename
 import datetime
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
+import helpers
 
 # import ipdb; ipdb.set_trace()
 
-# Twilio
-account_sid = "ACb630b7f56b10119e369292a6afaa4449"
-auth_token = "a541fec3e2e5b3e03c67d5a84c649dab"
 
 # Uploading image file into project folder
 UPLOAD_FOLDER = 'static/picture_uploads'
@@ -37,13 +33,6 @@ def homepage():
 
 # LOGGING IN
 ##############################################################
-# @app.route('/login')
-# def login_form():
-#     """Show login form."""
-
-#     return render_template('login_form.html')
-
-
 @app.route('/login', methods=['POST'])
 def login():
     """Show login form."""
@@ -81,6 +70,11 @@ def valid_user():
 @app.route('/user/<user_id>')
 def user_profile(user_id):
     """User's account page."""
+
+    if not session:
+        flash('Sorry, incorrect login.')
+        return redirect('/')
+
     now = datetime.datetime.today()
     # gathering user info, events invited to and created, and their friends
     # to be displayed onto their profile page
@@ -145,29 +139,46 @@ def edit_profile(user_id):
 def befriending(user_id):
     """Friending between session user and another user."""
 
+
+
     existing_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
                                                   Friendship.friend_2_id == user_id).first()
+    session_user = User.query.filter(User.user_id == session['user_id']).first()
+    other_user = User.query.filter(User.user_id == user_id).first()
 
     if not existing_friendship:
-        # creating friendship one way
+        # Creating friendship one way.
         new_friendship = Friendship(
             friend_1_id = session['user_id'],
             friend_2_id = user_id
             )
         db.session.add(new_friendship)
 
-    else:
-        # and then the other way
-        other_way = Friendship(
-            friend_1_id = user_id,
-            friend_2_id = session['user_id']
-            )
-        db.session.add(other_way)
+        # Friending txt notification.
 
-    
+        body="{friend_name}, {user_name} has befriend you. "\
+        "Go to their profile and check out their calendar: http://localhost:5000/user/{user_id}".format(
+                                                                                                        friend_name=other_user.name,
+                                                                                                        user_name=session_user.name,
+                                                                                                        user_id=session_user.user_id)
+        
+    # else:
+    #     # and then the other way
+    #     other_way = Friendship(
+    #         friend_1_id = user_id,
+    #         friend_2_id = session['user_id']
+    #         )
+    #     db.session.add(other_way)
+
+    #     # Friending txt notification
+    #     body="{friend_name}, {user_name} friended you back! "\
+    #     "Go to their profile and check out their calendar: http://localhost:5000/user/{user_id}".format(
+    #                                                                                                     friend_name=other_user.name,
+    #                                                                                                     user_name=session_user.name,
+    #                                                                                                     user_id=session_user.user_id)
+
     db.session.commit()
-
-    flash('Made a friend!')
+    helpers.send_txt_notification(body)
 
     return redirect('/user/{user_id}'.format(user_id=user_id))
 
@@ -282,7 +293,8 @@ def get_events_from_db(user_id):
             'event_location': str(invitation.event.location),
             'start_date': str(invitation.event.start_at), 
             'end_date': str(invitation.event.end_at), 
-            'event_id': invitation.event_id
+            'event_id': invitation.event_id,
+            'creator_id': invitation.event.creator_id
             }
 
         events_invited.append(event_info)
@@ -295,7 +307,8 @@ def get_events_from_db(user_id):
             'event_location': str(hosting.location),
             'start_date': str(hosting.start_at), 
             'end_date': str(hosting.end_at), 
-            'event_id': hosting.event_id
+            'event_id': hosting.event_id,
+            'creator_id': hosting.creator_id
             }
 
         events_hosting.append(event_info)
@@ -304,7 +317,6 @@ def get_events_from_db(user_id):
     # made into a single key-value dict of a list of dicts
     results = {'invites': events_invited, 'hostings': events_hosting}
     return jsonify(results)
-
 
 
 
@@ -352,37 +364,44 @@ def create_event():
         db.session.add(invitation)
         db.session.commit()
 
+        # send personalized text notification
         user = User.query.filter(User.user_id == invitee).first()
         event = Event.query.filter(Event.event_id == new_event.event_id).first()
+        body="Hey {name}, you have an invite from {creator}!\nCheck it out at http://localhost:5000/event/{event_id}".format(
+                                                                                                                             name=user.name,
+                                                                                                                             creator=event.creator.name, 
+                                                                                                                             event_id=event.event_id
+                                                                                                                             )
 
-        # send personalized text notification
-        client = Client(account_sid, auth_token)
-        client.api.account.messages.create(
-            to="+14159907366",
-            from_="+14158516073 ",
-            body="Hey {name}, you have an invite from {creator}!\nCheck it out at http://localhost:5000/event/{event_id}".format(
-                                                                                                                                 name=user.name,
-                                                                                                                                 creator=event.creator.name, 
-                                                                                                                                 event_id=event.event_id
-                                                                                                                                 )
-        )
+        helpers.send_txt_notification(body)
 
     flash('Event created!')
 
     return redirect('/event-page/{id}'.format(id=new_event.event_id))
 
 
-# Keep?
-# @app.route("/sms", methods=['GET', 'POST'])
-# def sms_ahoy_reply():
-#     """Respond to incoming messages with a friendly SMS."""
-#     # Start our response
-#     resp = MessagingResponse()
+@app.route('/edit-event/<event_id>', methods=['POST'])
+def edit_event_info(event_id):
+    """Let's creator edit event info."""
 
-#     # Add a message
-#     resp.message("Ahoy! Thanks so much for your message.")
+    event = Event.query.filter(Event.event_id == event_id).first()
 
-#     return str(resp)
+    if request.form.get('title'):
+        event.title = request.form.get('title')
+    if request.form.get('location'):
+        event.location = request.form.get('location')
+    if request.form.get('start_date'):
+        event.start_at = request.form.get('start_date')
+    if request.form.get('end_date'):
+        event.end_at = request.form.get('end_date')
+    if request.form.get('note'):
+        event.note = request.form.get('note')
+
+
+    db.session.commit()
+
+    return redirect('/event/{event_id}'.format(event.event_id))
+
 
 
 # EVENT INFORMATION
@@ -478,20 +497,16 @@ def invite_more_guests(event_id):
         db.session.add(invitation)
         db.session.commit()
 
+        # send personalized text notification
         user = User.query.filter(User.user_id == invitee).first()
         event = Event.query.filter(Event.event_id == event_id).first()
+        body="Hey {name}, you have an invite from {creator}!\nCheck it out at http://localhost:5000/event/{event_id}".format(
+                                                                                                                             name=user.name,
+                                                                                                                             creator=event.creator.name, 
+                                                                                                                             event_id=event.event_id
+                                                                                                                             )
 
-        # send personalized text notification
-        client = Client(account_sid, auth_token)
-        client.api.account.messages.create(
-            to="+14159907366",
-            from_="+14158516073 ",
-            body="Hey {name}, you have an invite from {creator}!\nCheck it out at http://localhost:5000/event/{event_id}".format(
-                                                                                                                                 name=user.name,
-                                                                                                                                 creator=event.creator.name, 
-                                                                                                                                 event_id=event_id
-                                                                                                                                 )
-        )
+        helpers.send_txt_notification(body)
 
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
@@ -565,4 +580,4 @@ if __name__ == "__main__":
     # Use the DebugToolbar
     # DebugToolbarExtension(app)
 
-    app.run(host="0.0.0.0"),
+    app.run(host="0.0.0.0")

@@ -44,17 +44,50 @@
 <h2>{{ event_info.title }}</h2>
 
 <!-- Event info -->
-Hosted by: <a href='/user/{{ event_info.creator.user_id }}'>{{ event_info.creator.name }}</a><br>
-Contact: {{ event_info.creator.phone }}<br><br>
-
-<!-- Note: {{ event_info.note }} -->
-<div>Where: {{ event_info.location }}</div>
-<div>When: {{ event_info.start_at }}</div>
-<div>Until: {{ event_info.end_at }}</div>
-
+<div>Hosted by: <a href='/user/{{ event_info.creator.user_id }}'>{{ event_info.creator.name }}</a></div>
+<div>Contact: {{ event_info.creator.phone }}</div>
+<div>{{ event_info.creator.email }}</div>
 
 <!-- If creator, can invite friends who are not already invited. -->
 {% if session.get('user_id') == event_info.creator.user_id %}
+	<div>
+		<a href="#" class="link-info" data-toggle="modal" data-target="#editEvent">
+	    	Edit event
+	    </a>
+	    <a href="delete" class="link-warning" data-toggle="modal" data-target="#editEvent">
+	    	Edit event
+	    </a>
+	</div>
+	<div id="editEvent" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-md">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Edit event</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+            <form action='/edit-event/{{ event_info.event_id }} ' method='POST'>
+              <div class="modal-body" align="center">
+                <p>Title: <input type ='text' name='title' placeholder='{{ event_info.title }}'></input>
+                </p>
+                <p>Location: <input type ='email' name='location' placeholder='{{ event_info.location }}'></input>
+                </p>
+                <p>Start: <input type='datetime-local' name='start_date' placeholder='{{ event_info.start_at }}'></input>
+                </p>
+                <p>End: <input type='datetime-local' name='end_date' placeholder='{{ event_info.end_at }}'></input>
+                </p>
+                <p>Note: <textarea name='note' placeholder='{{ event_info.note }}'></textarea>
+                </p>
+              </div>
+              <div class="modal-footer">
+                <input type='submit' value='Save'></input>
+              </div>
+            </form>
+        </div>
+      </div>
+    </div>
+
+
 	<!-- Collapsible panel for inviting more friends.-->
 	<div>
 		<div class="panel-group">
@@ -77,6 +110,12 @@ Contact: {{ event_info.creator.phone }}<br><br>
 		</div>
 	</div>
 {% endif %}
+
+<!-- Event info. -->
+<div>Where: {{ event_info.location }}</div>
+<div>When: {{ event_info.start_at }}</div>
+<div>Until: {{ event_info.end_at }}</div>
+<div>Message: {{ event_info.note }}
 
 
 <!-- Collapsible panel for the invited, who's going, and who's not going. -->

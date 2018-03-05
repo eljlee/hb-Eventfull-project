@@ -55,14 +55,14 @@ class Event(db.Model):
         """Provide helpful representation when printed."""
 
         return "< Event event_id={} title={} location={} start_at={} end_at={} note={} creator={}>".format(
-                                                                             self.event_id, 
-                                                                             self.title, 
-                                                                             self.location,
-                                                                             self.start_at, 
-                                                                             self.end_at,
-                                                                             self.note,
-                                                                             self.creator_id
-                                                                             )
+                                                                                                           self.event_id, 
+                                                                                                           self.title, 
+                                                                                                           self.location,
+                                                                                                           self.start_at, 
+                                                                                                           self.end_at,
+                                                                                                           self.note,
+                                                                                                           self.creator_id
+                                                                                                           )
 
 
 class Invitation(db.Model):
