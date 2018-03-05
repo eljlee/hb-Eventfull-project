@@ -263,11 +263,13 @@ def editing_event():
     return redirect('/user/{user_id}'.format(user_id=session['user_id']))
 
 
-@app.route('/delete-event', methods=['POST'])
-def delete_event():
+@app.route('/delete-event/<event_id>', methods=['POST'])
+def delete_event(event_id):
     """Allowed to delete an event."""
     
-    event_id = request.form.get('event_id')
+    if request.form.get('event_id'):
+        event_id = request.form.get('event_id')
+    
     cal_event_db_event = Event.query.filter(Event.event_id == event_id).first()
 
     db.session.delete(cal_event_db_event)

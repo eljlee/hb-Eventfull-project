@@ -1,14 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
-<script src="/static/schedule_manager/codebase/dhtmlxscheduler.js" type="text/javascript">
-</script>
-<script src="http://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
-<script src="/static/schedule_manager/codebase/ext/dhtmlxscheduler_editors.js">
-</script>
-<link rel="stylesheet" href="/static/schedule_manager/codebase/dhtmlxscheduler.css" type="text/css">
-<link rel="stylesheet" href="/static/calendar.css" type"text/css">
+
+<!-- <link rel="stylesheet" href="/static/schedule_manager/codebase/dhtmlxscheduler.css" type="text/css">
+<link rel="stylesheet" href="/static/calendar.css" type"text/css"> -->
 
 
 <h2>{{ user.name }}</h2>
@@ -43,12 +37,11 @@
                 </p>
               </div>
               <div class="modal-footer">
-                <input type='submit' value='Save'></input>
-                <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+                <button type='submit' value='Save'></input>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
               </div>
             </form>
         </div>
-
       </div>
     </div>
 
@@ -67,125 +60,11 @@
 
 
 <!-- Personal info, calendar and events will show if it's user's profile or their friend's -->
-
 {% if session['user_id'] == user.user_id or session['user_id'] in friend_list %}
-Email: {{ user.email }}<br>
+    Email: {{ user.email }}<br>
 
-Phone: {{ user.phone }}<br><br>
+    Phone: {{ user.phone }}<br><br>
 
-    <!-- CALENDAR DISPLAY -->
-    <body onload="init();">
-        <div id="scheduler_here" class="dhx_cal_container" style='width:800px; height:500px; padding:30px;'>
-            <div class="dhx_cal_navline">
-                <div class="dhx_cal_prev_button">&nbsp;</div>
-                <div class="dhx_cal_next_button">&nbsp;</div>
-                <div class="dhx_cal_today_button"></div>
-                <div class="dhx_cal_date"></div>
-                <div class="dhx_cal_tab" name="day_tab" style="right:204px;"></div>
-                <div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div>
-                <div class="dhx_cal_tab" name="month_tab" style="right:76px;"></div>
-            </div>
-            <div class="dhx_cal_header"></div>
-            <div class="dhx_cal_data"></div>       
-        </div>
-    </body>
-
-
-
-    <script type="text/javascript" charset="utf-8">
-            function init() {
-
-                // initiates calendar
-                scheduler.config.xml_date="%Y-%m-%d %H:%i";
-                scheduler.config.details_on_dblclick=true;
-                scheduler.config.details_on_create=true;
-                scheduler.config.event_duration = 60; //specify event duration in minutes for auto end time
-                scheduler.config.auto_end_date = true;
-                scheduler.config.full_day = true;
-                scheduler.config.first_hour = 8;
-                scheduler.config.start_on_monday = false;
-                if ({{ session['user_id']}} != {{ user.user_id }}) {
-                    scheduler.config.readonly = true;
-                }
-                scheduler.init('scheduler_here', new Date(),"month");
-                
-
-                // Creating event box.
-                scheduler.config.lightbox.sections = [
-                    {name: "Title", height: 40, map_to: "text", type: "textarea", focus: true},
-                    {name: "Location", height:50, type:"textarea", map_to:"event_location"},
-                    {name: "Time", height: 72, map_to: "auto", type: "time"}
-                ];
-
-                // Custom coloring for user and friends' events.
-                scheduler.templates.event_class = function (start, end, event) {
-                    // console.log(event, event.creator_id, {{ user.user_id }})
-                    if (event.creator_id == {{ user.user_id }}){
-                        return "user_event";
-                    }else{
-                        return "friend_event";
-                    }
-                };
-
-
-                function eventConfirmation(){
-                    alert("Event action!")
-                }
-
-                // Getting event info and post to route to update db.
-                scheduler.attachEvent("onEventAdded",function(id,ev){
-                    let x = scheduler.getEvent(id);
-                    let newEvent = {
-                        "title": scheduler.getEventText(id),
-                        "location": scheduler.getEvent(id).event_location,
-                        "start_date": x.start_date,
-                        "end_date": x.end_date
-                    }
-                    $.post('/calendar-events', newEvent, eventConfirmation);
-                    return true
-                });
-
-                // dhtmlx.message("You've cut event: <br/><b>"+ev.text+"</b>");
-                scheduler.attachEvent("onEventChanged", function(id,ev){
-                    let x = scheduler.getEvent(id)
-                    let updateEvents = {
-                        "title": scheduler.getEventText(id),
-                        "location": scheduler.getEvent(id).event_location,
-                        "start_date": x.start_date,
-                        "end_date": x.end_date,
-                        "event_id": x.event_id
-                    }
-                    $.post('/update-event', updateEvents, eventConfirmation);
-
-                });
-
-                scheduler.attachEvent("onBeforeEventDelete", function(id,e){
-                    let x = scheduler.getEvent(id)
-                    let deleteEvents = {
-                        "event_id": x.event_id
-                    }
-
-                    $.post('/delete-event', deleteEvents, eventConfirmation);
-                    return true;
-                });
-
-                // Ajax call to route that will query db for invitations and events user has created.
-                function getEvents() {
-                    $.get('/db-events.json/{{ user.user_id }}', function(results) {
-                        scheduler.parse(results['hostings'], "json");
-                        scheduler.parse(results['invites'], "json");
-                    });
-                }
-                getEvents();
-
-
-            }
-    </script>
-    <!-- User can only have this option on their own profile. -->
-    {% if session['user_id'] == user.user_id %}
-        Double click on a date to create a quick event, or
-        <a href='/create-event'>click here</a>.<br><br>
-    {% endif %}
 
     <!-- Events created. -->
     <div class="panel-group">
@@ -234,24 +113,141 @@ Phone: {{ user.phone }}<br><br>
         </div>
       </div>
     </div>
+
+    <!-- Friends list -->
+    <h3>Friends</h3>
+    <ul>
+        {% for friend in user.friends %}
+        <li>
+            <div class="media">
+                <a href='/user/{{ friend.user_id }}'>
+                  <img class="align-self-center mr-3 img-thumbnail" src="/static/picture_uploads/{{ friend.image }}" style="width:100px;height:100px" >
+                  <div class="media-body">
+                    {{ friend.name }}
+                  </div>
+                </a>
+            </div>
+        </li>
+        <br>
+        {% endfor %}
+    </ul>
+
+    <!-- CALENDAR DISPLAY -->
+    <body onload="init();">
+        <div id="scheduler_here" class="dhx_cal_container" style='width:800px; height:500px; padding:30px;'>
+            <div class="dhx_cal_navline">
+                <div class="dhx_cal_prev_button">&nbsp;</div>
+                <div class="dhx_cal_next_button">&nbsp;</div>
+                <div class="dhx_cal_today_button"></div>
+                <div class="dhx_cal_date"></div>
+                <div class="dhx_cal_tab" name="day_tab" style="right:204px;"></div>
+                <div class="dhx_cal_tab" name="week_tab" style="right:140px;"></div>
+                <div class="dhx_cal_tab" name="month_tab" style="right:76px;"></div>
+            </div>
+            <div class="dhx_cal_header"></div>
+            <div class="dhx_cal_data"></div>       
+        </div>
+    </body>
+
+
+
+    <script type="text/javascript" charset="utf-8">
+            function init() {
+
+                // initiates calendar
+                scheduler.config.xml_date="%Y-%m-%d %H:%i";
+                scheduler.config.details_on_dblclick=true;
+                scheduler.config.details_on_create=true;
+                scheduler.config.event_duration = 60; //specify event duration in minutes for auto end time
+                scheduler.config.auto_end_date = true;
+                scheduler.config.full_day = true;
+                scheduler.config.first_hour = 8;
+                scheduler.config.start_on_monday = false;
+                if ({{ session['user_id']}} != {{ user.user_id }}) {
+                    scheduler.config.readonly = true;
+                }
+                scheduler.init('scheduler_here', new Date(),"month");
+                
+
+                // Creating event box.
+                scheduler.config.lightbox.sections = [
+                    {name: "Title", height: 30, map_to: "text", type: "textarea", focus: true},
+                    {name: "Location", height:50, type:"textarea", map_to:"event_location"},
+                    {name: "Time", height: 72, map_to: "auto", type: "time"}
+                ];
+
+                // Custom coloring for user and friends' events.
+                scheduler.templates.event_class = function (event) {
+                    // console.log(event, event.creator_id, {{ user.user_id }})
+                    if (event.creator_id == {{ user.user_id }}){
+                        return "user_event";
+                    } else{
+                        return "friend_event";
+                    }
+                };
+
+
+                function eventConfirmation(){
+                    alert("Event action!")
+                    // $.get('/user/{{ user.user_id }}');
+                }
+
+                // Getting event info and post to route to update db.
+                scheduler.attachEvent("onEventAdded",function(id,ev){
+                    let x = scheduler.getEvent(id);
+                    let newEvent = {
+                        "title": scheduler.getEventText(id),
+                        "location": scheduler.getEvent(id).event_location,
+                        "start_date": x.start_date,
+                        "end_date": x.end_date
+                    }
+                    $.post('/calendar-events', newEvent, eventConfirmation);
+                    return true
+                });
+
+                // dhtmlx.message("You've cut event: <br/><b>"+ev.text+"</b>");
+                scheduler.attachEvent("onEventChanged", function(id,ev){
+                    let x = scheduler.getEvent(id)
+                    let updateEvents = {
+                        "title": scheduler.getEventText(id),
+                        "location": scheduler.getEvent(id).event_location,
+                        "start_date": x.start_date,
+                        "end_date": x.end_date,
+                        "event_id": x.event_id
+                    }
+                    $.post('/update-event', updateEvents, eventConfirmation);
+
+                });
+
+                scheduler.attachEvent("onBeforeEventDelete", function(id,e){
+                    let x = scheduler.getEvent(id)
+                    let deleteEvent = {
+                        "event_id": x.event_id
+                    }
+
+                    $.post('/delete-event/event_id', deleteEvent, eventConfirmation);
+                    return true;
+                });
+
+                // Ajax call to route that will query db for invitations and events user has created.
+                function getEvents() {
+                    $.get('/db-events.json/{{ user.user_id }}', function(results) {
+                        scheduler.parse(results['hostings'], "json");
+                        scheduler.parse(results['invites'], "json");
+                    });
+                }
+                getEvents();
+
+
+            }
+    </script>
+    <!-- User can only have this option on their own profile. -->
+    {% if session['user_id'] == user.user_id %}
+        Double click on a date to create a quick event, or
+        <a href='/create-event'>click here</a>.<br><br>
+    {% endif %}
+
+    
 {% endif %}
 
-
-<!-- Friends list -->
-<h3>Friends</h3>
-<ul>
-    {% for friend in user.friends %}
-    <li>
-        <div class="media">
-            <a href='/user/{{ friend.user_id }}'>
-              <img class="align-self-center mr-3 img-thumbnail" src="/static/picture_uploads/{{ friend.image }}" style="width:100px;height:100px" >
-              <div class="media-body">
-                {{ friend.name }}
-              </div>
-            </a>
-        </div>
-    </li>
-    <br>
-    {% endfor %}
-</ul>
 {% endblock %}

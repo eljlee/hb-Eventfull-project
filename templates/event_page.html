@@ -51,13 +51,16 @@
 <!-- If creator, can invite friends who are not already invited. -->
 {% if session.get('user_id') == event_info.creator.user_id %}
 	<div>
-		<a href="#" class="link-info" data-toggle="modal" data-target="#editEvent">
-	    	Edit event
-	    </a>
-	    <a href="delete" class="link-warning" data-toggle="modal" data-target="#editEvent">
+		<a href="#" class="text-secondary" data-toggle="modal" data-target="#editEvent">
 	    	Edit event
 	    </a>
 	</div>
+    <div>
+	    <a href="#" class="text-danger" data-toggle="modal" data-target="#deleteEvent">
+	    	Delete event
+	    </a>
+	</div>
+	<!-- Edit modal. -->
 	<div id="editEvent" class="modal fade" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-md">
         <!-- Modal content-->
@@ -80,7 +83,26 @@
                 </p>
               </div>
               <div class="modal-footer">
-                <input type='submit' value='Save'></input>
+                <button class="btn btn-secondary" type='submit' value='Save'></input>
+              </div>
+            </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete event. -->
+    <div id="deleteEvent" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-md">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Delete event?</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+            <form action='/delete-event/{{ event_info.event_id }} ' method='POST'>
+              <div class="modal-body" align="center">
+                <button type="submit" class="btn btn-danger">Delete</button>
+		        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
               </div>
             </form>
         </div>
