@@ -1,4 +1,9 @@
 ##### server file ######
+# import ipdb; ipdb.set_trace()
+
+#################
+#### imports ####
+#################
 import os
 from flask import Flask, render_template, redirect, request, flash, session, jsonify, url_for
 # from flask_login import login_required
@@ -9,9 +14,10 @@ import datetime
 from model import User, Event, Invitation, Picture, Friendship, connect_to_db, db
 import helpers
 
-# import ipdb; ipdb.set_trace()
 
-
+################
+#### config ####
+################
 # Uploading image file into project folder
 UPLOAD_FOLDER = 'static/picture_uploads'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg'])
@@ -21,6 +27,10 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'EVENTFULL'
 
+
+################
+#### routes ####
+################
 
 # NEED TO BE LOGGED IN BEFORE BEING ABLE TO DO ANYTHING?
 

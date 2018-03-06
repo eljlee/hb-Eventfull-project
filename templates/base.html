@@ -1,57 +1,63 @@
 <!doctype html>
 <html>
 <head>
-  <script src="http://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous">
+  </script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous">
+  </script>
+    <link href="/static/styles.css" rel="stylesheet" type="text/css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
 </head>
 
 <body>
-<nav class="navbar sticky-top navbar-expand-md navbar-dark bg-dark">
-  <a class="navbar-brand" href="/">Eventfull</a>
+  <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-dark">
+    <a class="navbar-brand" href="/">Eventfull</a>
 
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-  <div class="collapse navbar-collapse" id="navbarNavDropdown">
-    <ul class="navbar-nav">
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
 
-      {% if session.get('user_id') %}
-      <li class="nav-item dropdown active">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropDownMenuLink" data-toggle="dropdown" 
-        aria-haspopup="true" aria-expanded="false">Profile <span class="sr-only">(current)</span></a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-          <a class="dropdown-item" href="/user">Your Planner</a>
-          <a class="dropdown-item" href='/create-event'>Create an event</a>
-          <!-- <a class="dropdown-item" href="#">Another action</a>
-          <a class="dropdown-item" href="#">Something else here</a> -->
-          <a class="dropdown-item" href="/logout">Logout</a>
-        </div>
-     
-      {% else %}
-      <li class="nav-item">
-        <a class="nav-link" href="#" id="login">Login</a>
-      </li>
+        {% if session.get('user_id') %}
+        <li class="nav-item dropdown active">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropDownMenuLink" data-toggle="dropdown" 
+          aria-haspopup="true" aria-expanded="false">Profile <span class="sr-only">(current)</span></a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="/user">Your Calendar</a>
+            <a class="dropdown-item" href='/create-event'>Create an event</a>
+            <a class="dropdown-item" href="/logout">Logout</a>
+          </div>
+       
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="#" id="login">Login</a>
+        </li>
 
-      <li class="nav-item">
-        <a class="nav-link" href="#" id="register">Register New user</a>
-      </li>
-      {% endif %}
-    </ul>
-  </div>
+        <li class="nav-item">
+          <a class="nav-link" href="#" id="register">Register New user</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
 
 
-  <!-- Search box -->
-  <div>
-    <form action='/search-friend' method='POST' class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="search" name="email" placeholder="Enter email" aria-label="Search"></input>
-      <input class="btn btn-outline-info my-2 my-sm-0" type="submit" value="Search friend"></input>
-    </form>
-  </div>
-</nav>
+    <!-- Search box -->
+    <div>
+      <form action='/search-friend' method='POST' class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2" type="search" name="email" placeholder="Enter email" aria-label="Search"></input>
+        <input class="btn btn-outline-info my-2 my-sm-0" type="submit" value="Search friend"></input>
+      </form>
+    </div>
+  </nav>
 
 <ul>
   	{% for message in get_flashed_messages() %}
@@ -74,7 +80,7 @@
           <form action='/login' method='POST'>
             <div class="modal-body" align="center">
               Sign in
-              <p><input type='email' name='user_email' placeholder='Email'></input></p>
+              <p><input type='email' name='user_email' placeholder='Email' autofocus></input></p>
               <p><input type='password' name='user_password' placeholder='Password'></input></p>
             </div>
             <div align="center">
@@ -100,9 +106,9 @@
 
           <form action='/new-user' method='POST'>
             <div class="modal-body" align="center">
-              <p><input type ='text' name='new_user_name' placeholder='Full Name' autofocus></p>
+              <p><input type ='text' name='new_user_name' placeholder='Full Name' autofocus></input></p>
               <p><input type='email' name='new_user_email' placeholder='Email'></input></input></p>
-              <p><input type='password' name='new_user_password' placeholder='Password'></p>
+              <p><input type='password' name='new_user_password' placeholder='Password'></input></p>
               <p><input type ='tel' name='new_user_phone' placeholder='Phone'></input>
             </div>
             <div class="modal-footer">
@@ -135,7 +141,7 @@
 {% block content %} 
 CONTENTS
 {% endblock %}
-<br><br>
+
 
 </body>
 <footer>Copyright © 2018 Eventfull</footer>
