@@ -37,8 +37,9 @@
 	{% endif %}
 {% endif %}
 
-
-<h2 class="text-white text-center" id="title">{{ event_info.title }}</h2>
+<div class="card background">
+	<h2 class="font-text" id="title">{{ event_info.title }}</h2>
+</div>
 
 
 <div class="container text-light">
@@ -48,7 +49,7 @@
 			<div class="card" id="hostBackground">
 				<!-- Event info -->
 				<div class="card-body" id="text">
-					<p>Hosted by: <a class="text-white" href='/user/{{ event_info.creator.user_id }}'>{{ event_info.creator.name }}</a></p>
+					<p>Hosted by: <a class="font-text" href='/user/{{ event_info.creator.user_id }}'>{{ event_info.creator.name }}</a></p>
 					<p>Contact: {{ event_info.creator.phone }}</p>
 					<p>Email: {{ event_info.creator.email }}</p>
 				</div>
@@ -60,36 +61,26 @@
 			  <div class="panel panel-default">
 			    <div class="panel-heading">
 			      <h5 class="panel-title">
-			        <a class="text-white" data-toggle="collapse" href="#collapse2">Click to see who can view this</a>
+			        <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#collapse2">Click to see who else can view this</a>
 			      </h5>
 			    </div>
 			    <div id="collapse2" class="panel-collapse collapse">
-			    	{% for invitation in invitations %}
-						{% if invitation.attending == None %}
-							<div class="panel-body"><a class="text-info" href='/user/{{ invitation.invitee.user_id }}'>{{ invitation.invitee.name }}</a></div>
-						{% endif %}
-					{% endfor %}
+
+			    	<div class="card dropdown-body">
+                        <div class="card-body">
+					    	{% for invitation in invitations %}
+								{% if invitation.attending == None %}
+									<div class="panel-body"><a class="font-text text-info sub-text" href='/user/{{ invitation.invitee.user_id }}'>{{ invitation.invitee.name }}</a></div>
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+
+
 			    </div>
 			  </div>
 			</div>
 		</div>
-
-		{% if session.get('user_id') == event_info.creator.user_id %}
-		<div class="col">
-			<div class="subtitle">
-				<h4>Invite others</h4>
-			</div>
-			<div data-spy="scroll" data-offset="0">
-				<form action='/invite-more/{{ event_info.event_id }}' method='POST'>
-			    	{% for friend in uninvited_friends %}
-					  	<div class="panel-body text-white"><input type='checkbox' name='friend' value='{{ friend.user_id }}'>{{ friend.name }}</div>
-					{% endfor %}
-					  <div class="panel-footer"><input type='submit' value='Invite'></input></div>
-				</form>
-			</div>
-
-		</div>
-		{% endif %}
 
 	</div>
 </div>
@@ -99,7 +90,7 @@
 	<div class="row">
 		<div class="col">
 			<div class="card info" id="infoBackground">
-				<div class="card-body text-light" id="text">
+				<div class="card-body font-text">
 					<p>Where: {{ event_info.location }}</p>
 					<p>When: {{ event_info.start_at }}</p>
 					<p>Until: {{ event_info.end_at }}</p>
@@ -114,15 +105,20 @@
 			  <div class="panel panel-default">
 			    <div class="panel-heading">
 			      <h5 class="panel-title">
-			        <a class="text-white" data-toggle="collapse" href="#collapse3">Click to see who's going</a>
+			        <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#collapse3">Click to see who's going</a>
 			      </h5>
 			    </div>
 			    <div id="collapse3" class="panel-collapse collapse">
-			    	{% for invitation in invitations %}
-						{% if invitation.attending %}
-							<div class="panel-body text-white"><a class="text-info" href='/user/{{ invitation.invitee.user_id }}'>{{ invitation.invitee.name }}</a>: {{ invitation.notes }}</div>
-						{% endif %}
-					{% endfor %}
+			    	<div class="card dropdown-body">
+                        <div class="card-body">
+					    	{% for invitation in invitations %}
+								{% if invitation.attending %}
+									<div class="panel-body font-text sub-text text-dark"><a class="text-info" href='/user/{{ invitation.invitee.user_id }}'>{{ invitation.invitee.name }}</a>: {{ invitation.notes }}</div>
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+
 			    </div>
 			  </div>
 			</div>
@@ -133,19 +129,60 @@
 			  <div class="panel panel-default">
 			    <div class="panel-heading">
 			      <h5 class="panel-title">
-			        <a class="text-white" data-toggle="collapse" href="#collapse4">Click to see who can't make it</a>
+			        <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#collapse4">Click to see who can't make it</a>
 			      </h5>
 			    </div>
 			    <div id="collapse4" class="panel-collapse collapse">
-			    	{% for invitation in invitations %}
-						{% if invitation.attending == False %}
-							<div class="panel-body text-white"><a class="text-info" href='/user/{{ invitation.invitee.user_id }}'>{{ invitation.invitee.name }}</a>: {{ invitation.notes }}</div>
-						{% endif %}
-					{% endfor %} 
+
+			    	<div class="card dropdown-body">
+                        <div class="card-body">
+					    	{% for invitation in invitations %}
+								{% if invitation.attending == False %}
+									<div class="panel-body font-text sub-text text-dark"><a class="text-info" href='/user/{{ invitation.invitee.user_id }}'>{{ invitation.invitee.name }}</a>: {{ invitation.notes }}</div>
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+
 			    </div>
 			  </div>
 			</div>
 		</div>
+
+	</div>
+</div>
+
+
+
+<div class="container">
+	<div class="row">
+		{% if session.get('user_id') == event_info.creator.user_id %}
+		<div class="col-3">
+			<div class="panel-group">
+			  <div class="panel panel-default">
+			    <div class="panel-heading">
+			      <h5 class="panel-title">
+			        <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#friends">Invite others</a>
+			      </h5>
+			    </div>
+			    <div id="friends" class="panel-collapse collapse">
+
+			    	<div class="card dropdown-body">
+                        <div class="card-body">
+					    	<form action='/invite-more/{{ event_info.event_id }}' method='POST'>
+						    	{% for friend in uninvited_friends %}
+								  	<div class="panel-body"><input class="font-text" type='checkbox' name='friend' value='{{ friend.user_id }}'>{{ friend.name }}</div>
+								{% endfor %}
+								  <div class="panel-footer"><input type='submit' value='Invite'></input></div>
+							</form>
+						</div>
+					</div>
+
+			    </div>
+			  </div>
+			</div>
+		</div>
+		{% endif %}
 
 	</div>
 </div>
@@ -156,10 +193,7 @@
 	<div class="container">
 		<div class="row">
 			<!-- Carousel -->
-			<div class="text-white">
-				<p>Hover over picture to pause. Click on arrows to navigate.</p>
-			</div>
-			<div class="container border p-3 mb-2 bg-dark">
+			<div class="container border p-3 mb-2 carousel-background">
 				<div id="carouselControls" class="carousel slide container" data-ride="carousel">
 				  	<div class="carousel-inner" align="center">
 				  		<div class="carousel-item active">
@@ -210,7 +244,7 @@
 	<div class="container">
 		<form action='/upload-event-photos/{{ event_info.event_id }}' method='POST' enctype=multipart/form-data>
 			<div class="text-white">
-				Upload file: <input type="file" name="image" accept="image/*"></input>
+				Upload image: <input type="file" name="image" accept="image/*"></input>
 				<input type='submit' value='Upload'></input>
 			</div>
 		</form>
@@ -221,14 +255,14 @@
 <!-- If creator, can invite friends who are not already invited. -->
 {% if session.get('user_id') == event_info.creator.user_id %}
 	<div>
-		<a class="text-white font-weight-bold" href="#" class="text-secondary" data-toggle="modal" data-target="#editEvent">
+		<button class="btn btn-white text-primary font-weight-bold" href="#" class="text-secondary" data-toggle="modal" data-target="#editEvent">
 	    	Edit event
-	    </a>
+	    </button>
 	</div>
     <div>
-	    <a href="#" class="text-danger font-weight-bold" data-toggle="modal" data-target="#deleteEvent">
+	    <button href="#" class="btn btn-danger text-white font-weight-bold" data-toggle="modal" data-target="#deleteEvent">
 	    	Delete event
-	    </a>
+	    </button>
 	</div>
 	<!-- Edit modal. -->
 	<div id="editEvent" class="modal fade" tabindex="-1" role="dialog">

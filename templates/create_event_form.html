@@ -4,25 +4,30 @@
     <h2>What's your event?</h2>
 
     <form action='/create-event' method='POST'>
-        <div>
-            <p>Title: <input type='text' name='title'></input></p>
-            <p>Location: <input type='text' name='location' placeholder='Where is it at?'></textarea></p>
-            <p>Start: <input type='datetime-local' name='start_date'></input></p>
-            <p>End: <input type='datetime-local' name='end_date'></input></p>
-            <p>Note: <textarea name='note' placeholder='Enter a note...'></textarea></p>
+        <div class="container">
+            <div class="row">
+                <div class="col"
+
+                    <p>Title: <input type='text' name='title'></input></p>
+                    <p>Location: <input type='text' name='location' placeholder='Where is it at?'></textarea></p>
+                    <p>Start: <input type='datetime-local' name='start_date'></input></p>
+                    <p>End: <input type='datetime-local' name='end_date'></input></p>
+                    <p>Note: <textarea name='note' placeholder='Enter a note...'></textarea></p>
+                </div>
+
+            <div class="col">
+               <!--  <form action='/invite'>
+                event_info.event_id -->
+                Who's invited?<br>
+                {% for friend in user.friends %}
+                    <input type='checkbox' name='friend' value='{{ friend.user_id }}'>{{ friend.name }}<br>
+                {% endfor %}<br>
+            </div>
+            
         </div>
-
-       <!--  <form action='/invite'>
-        event_info.event_id -->
-        Who's invited?<br>
-        {% for friend in user.friends %}
-            <input type='checkbox' name='friend' value='{{ friend.user_id }}'>{{ friend.name }}<br>
-        {% endfor %}<br>
-        
-
-        <input type='submit' value='Create'></input>
-        <input type='reset' value='Reset'></input>
-        
+    </div>
+    <input type='submit' value='Create'></input>
+    <input type='reset' value='Reset'></input>
     </form>
 </div>
 

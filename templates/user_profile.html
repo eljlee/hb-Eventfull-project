@@ -49,31 +49,35 @@
 
 
         <div class="col-3">
-            <h2 class="text-white">{{ user.name }}</h2>
-            <img src="/static/picture_uploads/{{ user.image }}" style="width:250px;" class="img-thumbnail">
-            <!-- Let user edit their profile -->
-            {% if session['user_id'] == user.user_id %}
-                <div>
-                    <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#editProfileModal">
-                      Edit profile
-                    </button>
-                </div>
+            <div class="card user-info">
+                <div class="card-body">
+                    <h2 class="name font-text">{{ user.name }}</h2>
+                    <img src="/static/picture_uploads/{{ user.image }}" style="width:250px;" class="img-thumbnail">
+                    <!-- Let user edit their profile -->
+                    {% if session['user_id'] == user.user_id %}
+                        <div>
+                            <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#editProfileModal">
+                              Edit profile
+                            </button>
+                        </div>
 
-            {% else %}
-                {% if current_user_friendship  %}
-                     <form action ='/unfriending/{{ user.user_id }}' method='POST'>
-                        <button>Unfriend</button>
-                    </form>
-                {% else %}
-                    <form action ='/friending/{{ user.user_id }}' method='POST'>
-                        <button>Friend</button>
-                    </form>
-                {% endif %}
-            {% endif %}
-{% if session['user_id'] == user.user_id or session['user_id'] in friend_list %}
-            <div class="text-white">
-                <p>Email: {{ user.email }}</p>
-                <p>Phone: {{ user.phone }}</p>
+                    {% else %}
+                        {% if current_user_friendship  %}
+                             <form action ='/unfriending/{{ user.user_id }}' method='POST'>
+                                <button>Unfriend</button>
+                            </form>
+                        {% else %}
+                            <form action ='/friending/{{ user.user_id }}' method='POST'>
+                                <button>Friend</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+        {% if session['user_id'] == user.user_id or session['user_id'] in friend_list %}
+                    <div class="font-text">
+                        <p>Email: {{ user.email }}</p>
+                        <p>Phone: {{ user.phone }}</p>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -85,14 +89,20 @@
             <div class="panel-group">
                   <div class="panel panel-default">
                     <div class="panel-heading">
-                      <h5 class="panel-title">
-                        <a class="text-white" data-toggle="collapse" href="#eventsCreated">List of events created</a>
+                      <h5 class="panel-title text-center">
+                        <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#eventsCreated">List of events created</a>
                       </h5>
                     </div>
                     <div id="eventsCreated" class="panel-collapse collapse">
-                        {% for event in events %}
-                            <div class="panel-body"><a class="text-info" href='/event-page/{{ event.event_id }}'>{{ event.title }}</a></div>
-                        {% endfor %}
+
+                        <div class="card dropdown-body">
+                            <div class="card-body">
+                                {% for event in events %}
+                                    <div class="panel-body"><a class="font-text sub-text text-info" href='/event-page/{{ event.event_id }}'>{{ event.title }}</a></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
                     </div>
                   </div>
             </div>
@@ -103,13 +113,19 @@
               <div class="panel panel-default">
                 <div class="panel-heading">
                     <h5 class="panel-title">
-                        <a class="text-white" data-toggle="collapse" href="#eventsInvited">Events invited to</a>
+                        <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#eventsInvited">Events invited to</a>
                     </h5>
                 </div>
                 <div id="eventsInvited" class="panel-collapse collapse">
-                    {% for invitation in invitations %}
-                        <div class="panel-body text-white">{{ invitation.event.creator.name }} - <a class="text-info" href='/event-page/{{ invitation.event_id }}'>{{ invitation.event.title }}</a></div>
-                    {% endfor %}
+
+                    <div class="card dropdown-body">
+                        <div class="card-body">
+                            {% for invitation in invitations %}
+                                <div class="panel-body font-text sub-text text-dark">{{ invitation.event.creator.name }} - <a class="text-info" href='/event-page/{{ invitation.event_id }}'>{{ invitation.event.title }}</a></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                 </div>
               </div>
           </div>
@@ -119,13 +135,20 @@
               <div class="panel panel-default">
                 <div class="panel-heading">
                   <h5 class="panel-title">
-                    <a class="text-white" data-toggle="collapse" href="#eventsUpcoming">Upcoming events</a>
+                    <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#eventsUpcoming">Upcoming events</a>
                   </h5>
                 </div>
                 <div id="eventsUpcoming" class="panel-collapse collapse">
-                    {% for upcoming_event in upcoming_events %}
-                        <div class="panel-body text-white">{{ upcoming_event.event.creator.name }} - <a class="text-info" href='/event-page/{{ upcoming_event.event_id }}'>{{ upcoming_event.event.title }}</a></div>
-                    {% endfor %}
+
+                    <div class="card dropdown-body">
+                        <div class="card-body">
+                            {% for upcoming_event in upcoming_events %}
+                                <div class="panel-body sub-text text-dark">{{ upcoming_event.event.creator.name }} - <a class="text-info" href='/event-page/{{ upcoming_event.event_id }}'>{{ upcoming_event.event.title }}</a></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+
                 </div>
               </div>
             </div>
@@ -141,10 +164,10 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-9">
+        <div class="col-10">
             <!-- User can only have this option on their own profile. -->
             {% if session['user_id'] == user.user_id %}
-                <div class="text-white">
+                <div class="font-text">
                     Schedule and edit events on your calendar, or
                     <a href="/create-event" class="btn btn-sm btn-info">click here</a>
                 </div>
@@ -168,12 +191,12 @@
         </div>
 
 
-        <div class="col-3">
+        <div class="col-2">
             <div class="panel-group">
               <div class="panel panel-default">
                 <div class="panel-heading">
-                  <h5 class="panel-title">
-                    <a class="text-white" data-toggle="collapse" href="#friendList">Friends</a>
+                  <h5 class="panel-title text-left">
+                    <a class="btn btn-sm btn-info font-text" data-toggle="collapse" href="#friendList">Friends</a>
                   </h5>
                 </div>
                 <div id="friendList" class="panel-collapse collapse">
@@ -181,7 +204,7 @@
                         <div class="media">
                             <a href='/user/{{ friend.user_id }}'>
                               <img class="align-self-center mr-3 img-thumbnail" src="/static/picture_uploads/{{ friend.image }}" style="width:100px;height:100px">
-                              <div class="media-body text-white">
+                              <div class="media-body font-text sub-text">
                                 {{ friend.name }}
                               </div>
                             </a>

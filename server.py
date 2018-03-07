@@ -190,9 +190,9 @@ def befriending(user_id):
                                                                                                         friend_name=other_user.name,
                                                                                                         user_name=session_user.name,
                                                                                                         user_id=session_user.user_id)
-        
-    db.session.commit()
-    # helpers.send_txt_notification(body)
+        helpers.send_txt_notification(body)
+        db.session.commit()
+    
 
     return redirect('/user/{user_id}'.format(user_id=user_id))
 
@@ -389,7 +389,7 @@ def create_event():
                                                                                                                              event_id=event.event_id
                                                                                                                              )
 
-        # helpers.send_txt_notification(body)
+        helpers.send_txt_notification(body)
 
     flash('Event created!')
 
@@ -433,6 +433,15 @@ def event_info(event_id):
     invitations = Invitation.query.filter(Invitation.event_id == event_id).all()
 
     pictures = Picture.query.filter(Picture.event_id == event_id).all()
+
+    # event_start = event_info.start_at
+    # print event_start
+
+
+    # start_time = event_start.strptime(event_start, '%Y-%m-%d %H:%M').strftime('%A, %d %b %Y %l:%M %p')
+    # print start_time
+
+    
 
     # Creat list of friends who are not invited to an event
     already_invited_ids = [invitation.invitee_id for invitation in invitations]
@@ -522,7 +531,7 @@ def invite_more_guests(event_id):
                                                                                                                              event_id=event.event_id
                                                                                                                              )
 
-        # helpers.send_txt_notification(body)
+        helpers.send_txt_notification(body)
 
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
