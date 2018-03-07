@@ -1,44 +1,63 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<link href="/static/homepage.css" rel="stylesheet" type="text/css">
+<!-- <link href="/static/style.css" rel="stylesheet" type="text/css"> -->
 
 <title>Homepage</title>
 
-<div class="card bg-light">
-	<img class="card-img" src="/static/productive-desk.jpg" alt="Card image">
-	<div class="card-img-overlay">
-	  
-		<div class="transbox">
-	    	<p><h3>You have a busy day, let's stay organized.</h3></p>
-	  	</div>
-  	</div>
-  	<section class="container" id="homepage">
-		<div class="block">
-			<h2>Test</h2>
-			<p>While you may be too busy to keep a journal, you’re in for a pleasant surprise. We’ve discovered a way to turn your posts into an elegant journal quite worthy of a spot on your coffee table.</p>
+
+<div class="contianer">
+	<div class="row">
+		<div class="col">
+			<div class="card">
+				<h5 class="card-title text-center" id="homepage-card">You have an eventful day, let's schedule it in.</h5>
+			</div>
+			<div class="card">
+				<img class="card-img" src="/static/productive-desk.jpg" alt="Card image cap">
+			</div>
+			
+			<div class="card">
+			  <div class="card-body">
+			    <div class="card-text text-center">
+				    <h4>About</h4>
+				    <p>Eventfull is a calendar web app to help users put visuals on their busy schedules with a calendar view.
+				    </p>
+			    	<p>As well as, share with friends and family, so they can keep tabs on loved one's schedules.
+				    </p>
+				</div>
+
+			  </div>
+			</div>
 		</div>
-	</section>
-	
+	</div>
 </div>
 
+<!-- <div class="contianer">
+	<div class="row">
+		<div class="col">
+			<div class="card">
+				<h5 class="card-title text-center" id="homepage-card">You have an eventful day, let's schedule it in.</h5>
+			</div>
+			<img class="card-img" src="/static/people-coffee-notes-tea.jpg" alt="Card image cap">
+			<div class="card">
+			  <div class="card-body">
+			    <div class="card-text text-center">
+				    <h4>About</h4>
+				    <p>Eventfull is a calendar web app to help the user put visuals on their busy
+				    	schedule with a calendar view.
+				    </p>
+				</div>
 
-
-<!-- <div class="card bg-light">
-	<img class="card-img" src="/static/Eventfull/productive-desk.jpg" alt="Card image">
-	<div class="card-img-overlay">
+			  </div>
+			</div>
+		</div>
 	</div>
-	<section class="container-fluid"
-	    <h5 class="card-title"></h5>
-	    <p class="card-text">Birthdays</p>
-	    <p class="card-text">Sports games</p>
-	    <p class="card-text">Weddings</p>
-	    <p class="card-text">Recitals</p>
-	    <p class="card-text">Celebrations</p>
-	</section>
-	<span class="border-bottom"></span>
 </div> -->
+
+
 {% endblock %}
+
+
 
 
 

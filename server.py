@@ -37,7 +37,10 @@ app.secret_key = 'EVENTFULL'
 @app.route('/')
 def homepage():
     """Show homepage."""
+    # if 'user_id' in session:
+    #     return redirect('/user')
 
+    # else:
     return render_template('homepage.html')
 
 
@@ -84,24 +87,23 @@ def user_profile(user_id):
     if not session:
         flash('Sorry, incorrect login.')
         return redirect('/')
-
+    
     now = datetime.datetime.today()
     # gathering user info, events invited to and created, and their friends
     # to be displayed onto their profile page
     user = User.query.filter(User.user_id == user_id).first()
-    invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
     events = Event.query.filter(Event.creator_id == user_id).all()
+    invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
+    
     friends = Friendship.query.filter(Friendship.friend_1_id == user_id).all()
+    current_user_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
+                                                      Friendship.friend_2_id == user_id).first()
 
     upcoming_events = []
     for invitation in invitations:
-        if invitation.event.end_at > now:
+        if invitation.event.end_at > now and invitation.attending == True:
             upcoming_events.append(invitation)
     upcoming_events.reverse()
-    
-
-    current_user_friendship = Friendship.query.filter(Friendship.friend_1_id == session['user_id'],
-                                                      Friendship.friend_2_id == user_id).first()
 
     # used to check if user has access to another user's event and calendar
     friend_list = []
@@ -109,10 +111,27 @@ def user_profile(user_id):
         friend_list.append(friend.friend_2_id)
 
 
-    return render_template('user_profile.html', user=user, events=events, invitations=invitations, 
-                           friend_list=friend_list, current_user_friendship=current_user_friendship, 
-                           upcoming_events=upcoming_events
-                           )
+    return render_template('user_profile.html', user=user, events=events, 
+                           invitations=invitations, upcoming_events=upcoming_events, 
+                           friend_list=friend_list, current_user_friendship=current_user_friendship)
+
+
+# @app.route('/user/events/<user_id>')
+# def events_of_user(user_id):
+#     """Events that relate to user."""
+
+    
+#     user = User.query.filter(User.user_id == user_id).first()
+#     invitations = Invitation.query.filter(Invitation.invitee_id == user_id).all()
+    
+
+#     upcoming_events = []
+#     for invitation in invitations:
+#         if invitation.event.end_at > now and invitation.attending == True:
+#             upcoming_events.append(invitation)
+#     upcoming_events.reverse()
+
+#     return render_template('user_events.html', )
 
 
 # USER PROFILE - EDIT
@@ -172,23 +191,8 @@ def befriending(user_id):
                                                                                                         user_name=session_user.name,
                                                                                                         user_id=session_user.user_id)
         
-    # else:
-    #     # and then the other way
-    #     other_way = Friendship(
-    #         friend_1_id = user_id,
-    #         friend_2_id = session['user_id']
-    #         )
-    #     db.session.add(other_way)
-
-    #     # Friending txt notification
-    #     body="{friend_name}, {user_name} friended you back! "\
-    #     "Go to their profile and check out their calendar: http://localhost:5000/user/{user_id}".format(
-    #                                                                                                     friend_name=other_user.name,
-    #                                                                                                     user_name=session_user.name,
-    #                                                                                                     user_id=session_user.user_id)
-
     db.session.commit()
-    helpers.send_txt_notification(body)
+    # helpers.send_txt_notification(body)
 
     return redirect('/user/{user_id}'.format(user_id=user_id))
 
@@ -385,7 +389,7 @@ def create_event():
                                                                                                                              event_id=event.event_id
                                                                                                                              )
 
-        helpers.send_txt_notification(body)
+        # helpers.send_txt_notification(body)
 
     flash('Event created!')
 
@@ -412,7 +416,7 @@ def edit_event_info(event_id):
 
     db.session.commit()
 
-    return redirect('/event/{event_id}'.format(event.event_id))
+    return redirect('/event-page/{event_id}'.format(event_id=event.event_id))
 
 
 
@@ -518,7 +522,7 @@ def invite_more_guests(event_id):
                                                                                                                              event_id=event.event_id
                                                                                                                              )
 
-        helpers.send_txt_notification(body)
+        # helpers.send_txt_notification(body)
 
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
