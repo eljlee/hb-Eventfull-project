@@ -16,6 +16,5 @@ __Library:__ dhtmlxScheduler <br/>
 Users have a profile like a dashboard, and the database is queried to show their personal information, 
 the different types of events, their list of friends - as well as - a full calendar view created with 
 customized properties.
-![alt text](https://github.com/eljlee/hb-Eventfull-project/blob/master/static/readme_img/readme_profile.png "profile page")
-<img src="/static/readme_img/readme_calendar.png">
+
 
