@@ -13,8 +13,7 @@ __APIs:__ Twilio <br/>
 __Library:__ dhtmlxScheduler <br/>
 
 ## Features
-Users have a profile like a dashboard, and the database is queried to show their personal information, 
-the different types of events, and their list of friends
+Users have a profile like a dashboard, and the database is queried to show their personal information, the different types of events, and their list of friends
 ![alt text](/static/readme_img/readme_profile.png)
 
 
@@ -30,6 +29,5 @@ They are also able to upload images to share with other users and to stay connec
 ![alt text](/static/readme_img/readme_pic_carousal.png)
 
 
-And whenever a user is invited to an event, or some one befriends them, they get a text message notification, 
-thanks to Twilio's API.
+And whenever a user is invited to an event, or some one befriends them, they get a text message notification, thanks to Twilio's API.
 ![alt text](/static/readme_img/Twilio_notification_ex.png)
