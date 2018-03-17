@@ -28,6 +28,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'EVENTFULL'
 
 
+
+
 ################
 #### routes ####
 ################
@@ -190,7 +192,7 @@ def befriending(user_id):
                                                                                                         friend_name=other_user.name,
                                                                                                         user_name=session_user.name,
                                                                                                         user_id=session_user.user_id)
-        helpers.send_txt_notification(body)
+        helpers.send_txt_notification(body, ACCOUNT_SID, AUTH_TOKEN)
         db.session.commit()
     
 
@@ -389,7 +391,7 @@ def create_event():
                                                                                                                              event_id=event.event_id
                                                                                                                              )
 
-        helpers.send_txt_notification(body)
+        helpers.send_txt_notification(body, ACCOUNT_SID, AUTH_TOKEN)
 
     flash('Event created!')
 
@@ -531,7 +533,7 @@ def invite_more_guests(event_id):
                                                                                                                              event_id=event.event_id
                                                                                                                              )
 
-        helpers.send_txt_notification(body)
+        helpers.send_txt_notification(body, ACCOUNT_SID, AUTH_TOKEN)
 
     return redirect('/event-page/{event_id}'.format(event_id=event_id))
 
