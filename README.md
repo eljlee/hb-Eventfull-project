@@ -28,7 +28,7 @@ Users can view event pages to events they're invited to for more information.
 ![alt text](/static/readme_img/readme_event_page.png)
 
 
-They are also able to upload images to share with other users and to stay connected.
+They are also able to upload images to to the event page, sharing with other users and staying connected.
 <br>
 ![alt text](/static/readme_img/readme_pic_carousal.png)
 
