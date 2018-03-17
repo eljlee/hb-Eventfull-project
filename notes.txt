@@ -1,0 +1,84 @@
+
+// one way
+let events = [
+        { start_date:"2018-02-09 09:00:00", end_date:"2018-02-09 10:00:00", text:"Breakfast" },
+        { start_date:"2018-02-20 12:00", end_date:"2018-02-20 19:00", text:"Conference" },
+        { start_date:"2018-02-02 09:00", end_date:"2018-02-02 10:00", text:"Interview" }
+        ];
+
+scheduler.parse(events,"json");//takes the name and format of the data source
+
+// second way
+ scheduler.parse([
+            { start_date: "2018-02-22 12:00", end_date: "2018-02-22 14:00", text:"Task D-12458" },
+            { start_date: "2018-02-02 12:22", end_date: "2018-02-02 15:00", text:"Task D-72348" },
+            { start_date: "2018-02-13 13:22", end_date: "2018-02-13 18:00", text:"Task D-41185" },
+            { start_date: "2018-02-25 12:22", end_date: "2018-02-25 20:00", text:"Task D-92431" },
+        ],"json");
+
+
+scheduler.addEvent("16-06-2013 09:00","16-06-2013 12:00","Meeting", {holder:"John"})
+
+
+
+@app.route('/calendar-events')
+def get_events_from_db():
+    """Return all events for specific user as JSON."""
+
+    # this should get all invitations user has been invited to
+    invitations = Invitation.query.filter(Invitation.invitee_id == session['user_id']).all()
+    # should get all the events user has created
+    hostings = Event.query.filter(Event.creator_id == session['user_id']).all()
+
+    events_invited = []
+    for invitation in invitations:
+        event_info = {}
+        event_info = {
+            'start_date': str(invitation.event.start_at), 
+            'end_date': str(invitation.event.end_at), 
+            'text': str(invitation.event.title)
+            }
+
+        events_invited.append(event_info)
+
+
+    events_created = []
+    for hosting in hostings:
+        event_info = {}
+        event_info = {
+            'start_date': str(hosting.start_at), 
+            'end_date': str(hosting.end_at), 
+            'text': str(hosting.title)
+            }
+
+        events_created.append(event_info)
+
+
+    # made into a single key-value dict of a list of dicts
+    results = {'invites': events_invited, 'hostings': events_created}
+    return jsonify(results)
+
+
+
+
+
+# navbar
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+
+<span class="sr-only">(current)</span>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Dropdown
+    </a>
+    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+      <a class="dropdown-item" href="#">Action</a>
+      <a class="dropdown-item" href="#">Another action</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="#">Something else here</a>
+    </div>
+</li>
+<li class="nav-item">
+    <a class="nav-link disabled" href="#">Disabled</a>
+</li>

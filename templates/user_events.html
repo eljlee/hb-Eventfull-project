@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <div class="panel-group">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h5 class="panel-title">
+                        <a class="text-white" data-toggle="collapse" href="#eventsCreated">List of events created</a>
+                      </h5>
+                    </div>
+                    <div id="eventsCreated" class="panel-collapse collapse">
+                        {% for event in events %}
+                            <div class="panel-body"><a class="text-info" href='/event-page/{{ event.event_id }}'>{{ event.title }}</a></div>
+                        {% endfor %}
+                    </div>
+                  </div>
+            </div>
+        </div>
+
+        <div class="col-4">
+          <div class="panel-group">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h5 class="panel-title">
+                        <a class="text-white" data-toggle="collapse" href="#eventsInvited">Events invited to see</a>
+                    </h5>
+                </div>
+                <div id="eventsInvited" class="panel-collapse collapse">
+                    {% for invitation in invitations %}
+                        <div class="panel-body text-white">{{ invitation.event.creator.name }} - <a class="text-info" href='/event-page/{{ invitation.event_id }}'>{{ invitation.event.title }}</a></div>
+                    {% endfor %}
+                </div>
+              </div>
+          </div>
+        </div>
+        <div class="col-4">
+            <div class="panel-group">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h5 class="panel-title">
+                    <a class="text-white" data-toggle="collapse" href="#eventsUpcoming">Upcoming events</a>
+                  </h5>
+                </div>
+                <div id="eventsUpcoming" class="panel-collapse collapse">
+                    {% for upcoming_event in upcoming_events %}
+                        <div class="panel-body text-white">{{ upcoming_event.event.creator.name }} - <a class="text-info" href='/event-page/{{ upcoming_event.event_id }}'>{{ upcoming_event.event.title }}</a></div>
+                    {% endfor %}
+                </div>
+              </div>
+            </div>
+        </div>
+        
+
+        
+    </div>
+</div>
+
+
+{% endblock %}

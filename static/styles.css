@@ -1,0 +1,112 @@
+/*base*/
+.navbar{
+	opacity: 0.8;
+	background-color: black;
+}
+
+.navbar-brand{
+	color: #f0f8ff;
+}
+
+.navbar-brand, .nav-link{
+	color: #f0f8ff;
+	font-weight: 450;
+}
+
+.flash{
+	color: #f0f8ff;
+}
+
+body#base{
+	background: url('low_contrast_linen_@2X.png') repeat;
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+}
+
+.navbar-brand, .nav-link, .dropdown-item, .searchBar{
+	font-family: 'Questrial', sans-serif;
+	font-size: 18px;
+}
+
+footer{
+	color: #f0f8ff;
+}
+
+.container{
+	margin:20px;
+}
+
+/*homepage*/
+.homepage-top{
+	background-color: #f0f8ff;
+	opacity: 0.8;
+}
+#homepage-card{
+	font-family: 'Merriweather', serif;
+	font-size: 30px;
+	font-weight: 600;
+}
+
+/*user page*/
+.panel-title{
+	text-align: center;
+}
+
+.font-text{
+	font-family: 'Questrial', sans-serif;
+	font-size: 22px;
+	color: #f0f8ff;
+}
+.sub-text{
+	font-size: 20px;
+}
+
+.name.font-text{
+	font-size: 40px;
+
+}
+
+.card.user-info{
+	background-color: #326683;
+	opacity: 0.9;
+}
+
+.card.dropdown-body{
+	background-color: #f0f8ff;
+	opacity: 0.8;
+}
+
+.btn.btn-color{
+	background: #83a9cc;
+}
+
+
+/*event page*/
+.card.background{
+	background-color: #326683;
+}
+h2#title{
+	font-family: 'Questrial', sans-serif;
+	text-align: center;
+	font-size: 30px;
+	font-weight: 600;
+}
+
+.card#hostBackground, .card#infoBackground{
+	background-color: #326683;
+	opacity: 0.7;
+	color: #f0f8ff;
+	font-style: bold;
+}
+
+
+.card-body#font-text{
+	font-weight:600;
+}
+
+.carousel-background{
+	background-color: #415466;
+	opacity: 0.8;
+}
