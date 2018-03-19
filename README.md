@@ -36,3 +36,11 @@ They are also able to upload images to to the event page, sharing with other use
 And whenever a user is invited to an event, or some one befriends them, they get a text message notification, thanks to Twilio's API.
 <br>
 ![alt text](/static/readme_img/Twilio_notification_ex.png)
+
+### Future plans:
+- Option for email or text notifications
+- Upload background picture for event page
+- Commenting, versuse one-off comment
+
+## Disclaimer:
+The scheduler library is on a 30 day trial, and will most likely stop working after April 5, 2018
