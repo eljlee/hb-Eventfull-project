@@ -8,7 +8,7 @@ using personal profiles and text notifications with Twilio’s API.
 
 ## Tech Stack
 __Frontend:__ Javascript, jQuery, AJax, JSon, Jinja, HTML, CSS Bootstrap <br/>
-__Backend:__ Python, Flask, PostgreSQL, SQLAlchemy, Scrapy <br/>
+__Backend:__ Python, Flask, PostgreSQL, SQLAlchemy <br/>
 __APIs:__ Twilio <br/>
 __Library:__ dhtmlxScheduler <br/>
 
